@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <vector>
 
 #include "device_cl.h"
 
@@ -396,6 +397,45 @@ namespace skepu
 				return program;
 			}
 			
+			inline cl_program buildBinaryProgram(Device_CL *device, const std::vector<unsigned char> &binary_source, const std::string &options = "", size_t deviceID = 0) {
+				cl_int err;
+				std::stringstream allOptionsStream;
+				allOptionsStream << options << " -DSKEPU_INTERNAL_DEVICE_ID=" << deviceID;
+				const std::string allOptions = allOptionsStream.str();
+				
+				const char *opt = allOptions.c_str();
+				const cl_device_id device_id = device->getDeviceID();
+				const size_t binary_length =  binary_source.size();
+				const unsigned char* data = binary_source.data();
+				
+				cl_int binary_status;
+				cl_program program = clCreateProgramWithBinary(device->getContext(), 1, &device_id, &binary_length, &data, &binary_status, &err);
+				CL_CHECK_ERROR(err, "Error creating OpenCL program with binary");    
+				CL_CHECK_ERROR(binary_status, "Failed to load binary to device");
+
+				err = clBuildProgram(program, 0, NULL, opt, NULL, NULL);
+				if (err != CL_SUCCESS)
+				{
+#if true
+					cl_build_status build_status;
+					clGetProgramBuildInfo(program, device->getDeviceID(), CL_PROGRAM_BUILD_STATUS, sizeof(cl_build_status), &build_status, NULL);
+					if (build_status != CL_SUCCESS)
+					{
+						std::cerr
+							<< "Binary program:\n";
+						size_t log_size;
+						clGetProgramBuildInfo(program, device->getDeviceID(), CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+						std::string buildLog(log_size, '\0');
+						clGetProgramBuildInfo(program, device->getDeviceID(), CL_PROGRAM_BUILD_LOG, log_size, &buildLog[0], NULL);
+						SKEPU_ERROR("Error building OpenCL program: " << err << "\n" << buildLog);
+					}
+#else
+					SKEPU_ERROR("Error building OpenCL program: " << err);
+#endif
+				}
+				return program;
+			}
+
 		} // end namespace cl_helpers
 		
 	} // end namespace backend

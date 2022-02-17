@@ -173,7 +173,16 @@ namespace skepu
 					cl_int err = clGetDeviceInfo(this->m_device, prop.param_name, prop.param_value_size, prop.param_value, NULL);
 					CL_CHECK_ERROR(err, "Error adding OpenCL property value");
 				}
-				
+
+				size_t sz;
+				cl_int name_err = clGetDeviceInfo(this->m_device, CL_DEVICE_NAME, 0, NULL, &sz);
+				CL_CHECK_ERROR(name_err, "Failed to get device name size");
+
+				char* name = (char*)malloc(sizeof(char) * sz);
+				name_err = clGetDeviceInfo(this->m_device, CL_DEVICE_NAME, sz, name, NULL);
+				CL_CHECK_ERROR(name_err, "Failed to get device name");
+				this->m_deviceProp.DEVICE_NAME = name;
+
 				this->m_maxThreads = this->getMaxBlockSize() >> 1;
 				this->m_maxBlocks = (size_t)((size_t)1 << (m_deviceProp.DEVICE_ADDRESS_BITS-1)) * 2 - 1;
 				
@@ -186,6 +195,7 @@ namespace skepu
 			//! The destructor releases the OpenCL queue and context.
 			~Device_CL()
 			{
+				free(this->m_deviceProp.DEVICE_NAME);
 				clReleaseCommandQueue(m_queue);
 				clReleaseContext(m_context);
 				DEBUG_TEXT_LEVEL1("Released Device_CL");
@@ -213,6 +223,12 @@ namespace skepu
 			cl_ulong getSharedMemPerBlock() const
 			{
 				return m_deviceProp.DEVICE_LOCAL_MEM_SIZE;
+			}
+
+			//! \return The device name
+			const char* getDeviceName() const
+			{
+				return m_deviceProp.DEVICE_NAME;
 			}
 			
 			///! \return The maximum number of threads per block or group.
@@ -257,8 +273,7 @@ namespace skepu
 			cl_device_id getDeviceID() const
 			{
 				return m_device;
-			}
-			
+			}			
 		};
 		
 	} // end namespace backend

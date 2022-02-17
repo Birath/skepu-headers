@@ -484,7 +484,7 @@ template <typename T>
 					
 #if SKEPU_DEBUG > 0
 					Device_CL* d = m_devices_CL.back();
-					std::cout << "OpenCL device " << i << " properties:\n\t"
+					std::cout << "OpenCL device " << i << " (" << d->getDeviceName() << ") " "properties:\n\t"
 						<< "maxBlocks: "<< d->getMaxBlocks() << "\n\t"
 						<< "maxThreads: "<< d->getMaxThreads() << "\n\t"
 						<< "sharedMemoryPerBlock: "<<d->getSharedMemPerBlock() << "\n\t"

@@ -89,8 +89,8 @@ namespace skepu
 		
 #ifdef SKEPU_OPENCL
 			init_CL();
-#ifndef USE_INTEL_FPGA_SDK
-			createOpenCLProgramForMatrixTranspose(); TEMP FIX for INTEL FPGA OpenCL
+#ifndef USE_INTEL_FPGA_OPENCL //TEMP FIX for INTEL FPGA OpenCL
+			createOpenCLProgramForMatrixTranspose(); 
 #endif
 #endif
 		

@@ -89,7 +89,9 @@ namespace skepu
 		
 #ifdef SKEPU_OPENCL
 			init_CL();
-			createOpenCLProgramForMatrixTranspose();
+#ifndef USE_INTEL_FPGA_SDK
+			createOpenCLProgramForMatrixTranspose(); TEMP FIX for INTEL FPGA OpenCL
+#endif
 #endif
 		
 		
@@ -443,6 +445,19 @@ template <typename T>
 #else
 						if (!strcmp(inf, "NVIDIA Corporation"))
 							break;
+
+						if (!strcmp(inf, "Intel(R) Corporation"))
+						{
+							char name_buffer[1024]; // TODO Should maybe be dynamic
+							err= clGetPlatformInfo(temp_platforms[platform_ind], CL_PLATFORM_NAME, sizeof(char)*1024, name_buffer, NULL);
+#ifdef USE_INTEL_EMULATOR
+							if (!strcmp(name_buffer, "Intel(R) FPGA Emulation Platform for OpenCL(TM)"))
+								break;
+#else
+							if (!strcmp(name_buffer, "Intel(R) FPGA SDK for OpenCL(TM)"))
+								break;
+#endif
+						}
 #endif
 					}
 				}

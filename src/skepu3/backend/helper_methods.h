@@ -13,7 +13,9 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
-
+#ifdef USE_INTEL_FPGA_OPENCL
+#include <stdlib.h>
+#endif
 namespace skepu
 {
 	namespace backend
@@ -56,6 +58,14 @@ namespace skepu
 			{
 				SKEPU_ERROR("Error allocating pinned host memory\n");
 			}
+#elif defined(USE_INTEL_FPGA_OPENCL)
+		int error = posix_memalign((void**)&data, 64, numElems * sizeof(T));
+		if (error) {
+			SKEPU_ERROR("Alligned memory allocation failed\n");
+		}
+		if (!data)
+				SKEPU_ERROR("Memory allocation failed\n");
+
 #else
 			data = new T[numElems];
 			if (!data)
@@ -77,6 +87,8 @@ namespace skepu
 			cudaError_t status = cudaFreeHost(data);
 			if (status != cudaSuccess)
 				SKEPU_ERROR("Error de-allocating pinned host memory.\n");
+#elif defined(USE_INTEL_FPGA_OPENCL)
+			free(data);
 #else
 			delete[] data;
 #endif

@@ -49,7 +49,7 @@ namespace skepu
 	{
 		enum class Type
 		{
-			Auto, CPU, OpenMP, OpenCL, CUDA, Hybrid
+			Auto, CPU, OpenMP, OpenCL, CUDA, Hybrid, FPGA
 		};
 		
 		enum class Scheduling
@@ -63,7 +63,7 @@ namespace skepu
 		{
 			static const std::vector<Backend::Type> types
 			{
-				Backend::Type::CPU, Backend::Type::OpenMP, Backend::Type::OpenCL, Backend::Type::CUDA, Backend::Type::Hybrid
+				Backend::Type::CPU, Backend::Type::OpenMP, Backend::Type::OpenCL, Backend::Type::CUDA, Backend::Type::Hybrid, Backend::Type::FPGA
 			};
 			
 			return types;
@@ -85,6 +85,9 @@ namespace skepu
 #endif
 #ifdef SKEPU_HYBRID
 				Backend::Type::Hybrid,
+#endif
+#ifdef SKEPU_FPGA
+				Backend::Type::FPGA,
 #endif
 			};
 			
@@ -111,6 +114,7 @@ namespace skepu
 			if (s == "cpu") return Type::CPU;
 			else if (s == "openmp") return Type::OpenMP;
 			else if (s == "opencl") return Type::OpenCL;
+			else if (s == "fpga") return Type::FPGA;
 			else if (s == "cuda") return Type::CUDA;
 			else if (s == "hybrid") return Type::Hybrid;
 			else if (s == "auto") return Type::CUDA;
@@ -138,6 +142,7 @@ namespace skepu
 		case Backend::Type::OpenCL: o << "OpenCL"; break;
 		case Backend::Type::CUDA:   o << "CUDA"; break;
 		case Backend::Type::Hybrid:   o << "Hybrid"; break;
+		case Backend::Type::FPGA:   o << "FPGA"; break;
 		case Backend::Type::Auto:   o << "Auto"; break;
 		default: o << ("Invalid backend type");
 		}
@@ -165,6 +170,8 @@ namespace skepu
 		{
 #if defined(SKEPU_OPENCL)
 			Backend::Type::OpenCL
+#elif defined(SKEPU_FPGA)
+			Backend::Type::FPGA
 #elif defined(SKEPU_CUDA)
 			Backend::Type::CUDA
 #elif defined(SKEPU_OPENMP)

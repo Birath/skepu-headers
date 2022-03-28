@@ -46,11 +46,6 @@ namespace skepu
 				sizeof(Ret) * numThreads
 			);
 			
-			// CLKernel::reduceOnly (
-			// 	deviceID, numThreads, numThreads,
-			// 	&outMemP, &outMemP, numBlocks, sizeof(Ret) * numThreads
-			// );
-			
 			// Copy back result
 			pack_expand((std::get<AI-arity>(anyMemP)->changeDeviceData(hasWriteAccess(MapFunc::anyAccessMode[AI-arity])), 0)...);
 			outMemP.changeDeviceData();
@@ -106,11 +101,6 @@ namespace skepu
 					numElem, baseIndex, this->m_strides,
 					sizeof(Ret) * numThreads
 				);
-				
-				// CLKernel::reduceOnly (
-				// 	i, numThreads, numThreads,
-				// 	&outMemP[i], &outMemP[i], numBlocks, sizeof(Ret) * numThreads
-				// );
 				
 				// Copy back result
 				pack_expand((std::get<AI-arity>(anyMemP)->changeDeviceData(hasWriteAccess(MapFunc::anyAccessMode[AI-arity])), 0)...);

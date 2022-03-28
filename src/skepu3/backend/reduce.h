@@ -39,7 +39,7 @@ namespace skepu
 		public:
 			Reduce1D(CUDAKernel kernel) : m_cuda_kernel(kernel)
 			{
-#ifdef SKEPU_OPENCL
+#if defined(SKEPU_OPENCL) || defined(SKEPU_FPGA)
 				CLKernel::initialize();
 #endif
 			}
@@ -117,6 +117,25 @@ namespace skepu
 			T CL(size_t size, T &res, Iterator arg);
 			
 #endif
+
+#ifdef SKEPU_FPGA
+			
+			void reduceSingleThreadOneDim_FPGA(size_t deviceID, VectorIterator<T> &res, const MatrixIterator<T> &arg, size_t numRows);
+			
+			void reduceMultipleOneDim_FPGA(size_t numDevices, VectorIterator<T> &res, const MatrixIterator<T> &arg, size_t numRows);
+			
+			void FPGA(VectorIterator<T> &res, const MatrixIterator<T>& arg, size_t numRows);
+		
+			template<typename Iterator>
+			T reduceSingle_FPGA(size_t deviceID, size_t size, T &res, Iterator arg);
+			
+			template<typename Iterator>
+			T reduceMultiple_FPGA(size_t numDevices, size_t size, T &res, Iterator arg);
+		
+			template<typename Iterator>
+			T FPGA(size_t size, T &res, Iterator arg);
+			
+#endif
 			
 					
 #ifdef SKEPU_HYBRID
@@ -177,6 +196,11 @@ namespace skepu
 					this->OMP(res, arg_tr);
 					break;
 #endif
+				case Backend::Type::FPGA:
+#ifdef SKEPU_FPGA
+					this->FPGA(it, arg_tr.begin(), arg_tr.total_rows());
+					break;
+#endif
 				default:
 					this->CPU(res, arg_tr);
 				}
@@ -211,6 +235,10 @@ namespace skepu
 				case Backend::Type::OpenMP:
 #ifdef SKEPU_OPENMP
 					return this->OMP(size, res, arg);
+#endif
+				case Backend::Type::FPGA:
+#ifdef SKEPU_FPGA
+					return this->FPGA(size, res, arg);
 #endif
 				default:
 					return this->CPU(size, res, arg);
@@ -286,6 +314,16 @@ namespace skepu
 			T reduceNumDevices_CL(size_t numDevices, T &res, const MatrixIterator<T>& arg, size_t numRows);
 			
 #endif
+
+#ifdef SKEPU_FPGA
+			
+			T FPGA(T &res, const MatrixIterator<T>& arg, size_t numRows);
+			
+			T reduceSingle_FPGA(size_t deviceID, T &res, const MatrixIterator<T>& arg, size_t numRows);
+			
+			T reduceNumDevices_FPGA(size_t numDevices, T &res, const MatrixIterator<T>& arg, size_t numRows);
+			
+#endif
 			
 #ifdef SKEPU_HYBRID
 			
@@ -329,6 +367,10 @@ namespace skepu
 				case Backend::Type::OpenMP:
 #ifdef SKEPU_OPENMP
 					return this->OMP(res, arg_tr);
+#endif
+				case Backend::Type::FPGA:
+#ifdef SKEPU_FPGA
+					return this->FPGA(res, arg_tr.begin(), arg_tr.total_rows());
 #endif
 				default:
 					return this->CPU(res, arg_tr);
@@ -418,5 +460,6 @@ Reduce(T row, U col)
 #include "impl/reduce/reduce_cl.inl"
 #include "impl/reduce/reduce_cu.inl"
 #include "impl/reduce/reduce_hy.inl"
+#include "impl/reduce/reduce_fpga.inl"
 
 #endif // REDUCE_H

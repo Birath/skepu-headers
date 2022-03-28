@@ -72,6 +72,11 @@ namespace skepu
 				temp.param_value_size = sizeof(cl_ulong);
 				temp.param_value = &DEVICE_LOCAL_MEM_SIZE;
 				propertyList.push_back(temp);
+
+				temp.param_name = CL_DEVICE_MEM_BASE_ADDR_ALIGN;
+				temp.param_value_size = sizeof(cl_ulong);
+				temp.param_value = &DEVICE_MEM_BASE_ADDR_ALIGN;
+				propertyList.push_back(temp);
 			}
 			
 			std::vector<openclGenProp> propertyList;

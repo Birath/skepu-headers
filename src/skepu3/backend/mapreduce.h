@@ -32,7 +32,7 @@ namespace skepu
 			MapReduce(CUDAKernel mapreduce, CUDAReduceKernel reduce)
 			: m_cuda_kernel(mapreduce), m_cuda_reduce_kernel(reduce)
 			{
-#ifdef SKEPU_OPENCL
+#if defined(SKEPU_OPENCL) || defined(SKEPU_FPGA)
 				CLKernel::initialize();
 #endif
 			}
@@ -183,6 +183,14 @@ namespace skepu
 						get<CI>(std::forward<CallArgs>(args)...)...
 					);
 #endif
+				case Backend::Type::FPGA:
+#ifdef SKEPU_FPGA
+					return this->FPGA(0, size, ei, ai, ci, res,
+						get<EI>(std::forward<CallArgs>(args)...).begin()...,
+						get<AI>(std::forward<CallArgs>(args)...)...,
+						get<CI>(std::forward<CallArgs>(args)...)...
+					);
+#endif
 				default:
 					return this->CPU(size, oi, ei, ai, ci, res,
 						get<EI>(std::forward<CallArgs>(args)...).stridedBegin(size, this->m_strides[EI])...,
@@ -242,6 +250,19 @@ namespace skepu
 
 #endif // SKEPU_OPENCL
 
+
+#ifdef SKEPU_FPGA
+
+			template<size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
+			Ret FPGA(size_t startIdx, size_t size, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, Ret &res, CallArgs&&... args);
+
+			template<size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
+			Ret mapReduceNumDevices_FPGA(size_t numDevices, size_t startIdx, size_t size, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, Ret &res, CallArgs&&... args);
+
+			template<size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
+			Ret mapReduceSingle_FPGA(size_t deviceID, size_t startIdx, size_t size, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, Ret &res, CallArgs&&... args);
+
+#endif // SKEPU_OPENCL
 
 #ifdef SKEPU_HYBRID
 
@@ -315,5 +336,6 @@ MapReduce(T map_op, U red_op)
 #include "impl/mapreduce/mapreduce_cl.inl"
 #include "impl/mapreduce/mapreduce_cu.inl"
 #include "impl/mapreduce/mapreduce_hy.inl"
+#include "impl/mapreduce/mapreduce_fpga.inl"
 
 #endif

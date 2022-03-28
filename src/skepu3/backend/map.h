@@ -58,7 +58,7 @@ namespace skepu
 
 			Map(CUDAKernel kernel) : m_cuda_kernel(kernel)
 			{
-#ifdef SKEPU_OPENCL
+#if defined(SKEPU_OPENCL) || defined(SKEPU_FPGA)
 				CLKernel::initialize();
 #endif
 			}
@@ -148,6 +148,16 @@ namespace skepu
 
 #endif // SKEPU_OPENCL
 
+#ifdef SKEPU_FPGA
+
+			template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
+			void FPGA(size_t startIdx, size_t size, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args);
+
+			template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
+			void mapNumDevices_FPGA(size_t startIdx, size_t numDevices, size_t size, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args);
+
+#endif // SKEPU_FPGA
+
 #ifdef SKEPU_HYBRID
 
 			template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
@@ -200,6 +210,17 @@ namespace skepu
 					);
 					break;
 #endif
+				case Backend::Type::FPGA:
+#ifdef SKEPU_FPGA
+					this->FPGA(0, size, oi, ei, ai, ci,
+						get<OI>(std::forward<CallArgs>(args)...).begin()...,
+						get<EI>(std::forward<CallArgs>(args)...).begin()...,
+						get<AI>(std::forward<CallArgs>(args)...)...,
+						get<CI>(std::forward<CallArgs>(args)...)...
+					);
+					break;
+#endif
+
 				case Backend::Type::OpenMP:
 #ifdef SKEPU_OPENMP
 					this->OMP(size, oi, ei, ai, ci,
@@ -277,5 +298,6 @@ Map(T op)
 #include "impl/map/map_cl.inl"
 #include "impl/map/map_cu.inl"
 #include "impl/map/map_hy.inl"
+#include "impl/map/map_fpga.inl"
 
 #endif // MAP_H

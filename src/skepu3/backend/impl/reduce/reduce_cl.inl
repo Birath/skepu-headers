@@ -39,8 +39,8 @@ namespace skepu
 		 *  rows the reduction will perform, writing the result to the first numRows elements of res.
 		 *  The function uses only \em one device which is decided by a parameter. A Helper method.
 		 */
-		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel>
-		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
+		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::reduceSingleThreadOneDim_CL(size_t deviceID, VectorIterator<T> &res, const MatrixIterator<T> &arg, size_t numRows)
 		{
 			Device_CL *device = this->m_environment->m_devices_CL[deviceID];
@@ -93,8 +93,8 @@ namespace skepu
 		}
 		
 		
-		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel>
-		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
+		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::reduceMultipleOneDim_CL(size_t numDevices, VectorIterator<T> &res, const MatrixIterator<T> &arg, size_t numRows)
 		{
 			const size_t rows = numRows;
@@ -175,8 +175,8 @@ namespace skepu
 		 *  be written to Vector pointed to by VectorIterator res.
 		 *  Using \em OpenCL as backend.
 		 */
-		template <typename ReduceFunc, typename CUDAKernel, typename CLKernel>
-		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		template <typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
+		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::CL(VectorIterator<T> &res, const MatrixIterator<T>& arg, size_t numRows)
 		{
 			DEBUG_TEXT_LEVEL1("OpenCL Reduce (Matrix 1D): rows = " << numRows << ", cols = " << arg.getParent().total_cols()
@@ -202,9 +202,9 @@ namespace skepu
 		 *  Performs the Reduction on a range of elements with \em OpenCL as backend. Returns a scalar result. The function
 		 *  uses only \em one device which is decided by a parameter. A Helper method.
 		 */
-		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel>
+		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<typename Iterator>
-		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::reduceSingle_CL(size_t deviceID, size_t size, T &res, Iterator arg)
 		{
 			Device_CL *device = this->m_environment->m_devices_CL[deviceID];
@@ -227,9 +227,9 @@ namespace skepu
 		}
 		
 		
-		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel>
+		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<typename Iterator>
-		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::reduceMultiple_CL(size_t numDevices, size_t size, T &res, Iterator arg)
 		{
 			const size_t numElemPerSlice = size / numDevices;
@@ -287,9 +287,9 @@ namespace skepu
 		 *  on multiple devices, calling reduceNumDevices_CL(InputIterator inputBegin, InputIterator inputEnd, size_t numDevices).
 		 *  Using \em OpenCL as backend.
 		 */
-		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel>
+		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<typename Iterator>
-		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::CL(size_t size, T &res, Iterator arg)
 		{
 			DEBUG_TEXT_LEVEL1("OpenCL Reduce: size = " << size << ", maxDevices = " << this->m_selected_spec->devices()
@@ -317,8 +317,8 @@ namespace skepu
 		 *  Returns a scalar result. The function uses only \em one OpenCL device which is decided by a 
 		 *  parameter.
 		 */
-		template<typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel>
-		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel>
+		template<typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel, typename FPGAKernel>
+		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel, FPGAKernel>
 		::reduceSingle_CL(size_t deviceID, T &res, const MatrixIterator<T>& arg, size_t numRows)
 		{
 			Device_CL *device = this->m_environment->m_devices_CL[deviceID];
@@ -400,8 +400,8 @@ namespace skepu
 		 *  of elemets equally among the participating devices each reducing its part. The results are
 		 *  then reduced themselves on the CPU.
 		 */
-		template <typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel>
-		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel>
+		template <typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel, typename FPGAKernel>
+		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel, FPGAKernel>
 		::reduceNumDevices_CL(size_t numDevices, T &res, const MatrixIterator<T>& arg, size_t numRows)
 		{
 			const size_t rows = numRows;
@@ -505,8 +505,8 @@ namespace skepu
 		 *  internally calling the \em reduceSingle_CL or \em reduceNumDevices_CL depending upon number 
 		 *  of OpenCL devices specified/available.
 		 */
-		template<typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel>
-		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel>
+		template<typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel, typename FPGAKernel>
+		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel, FPGAKernel>
 		::CL(T &res, const MatrixIterator<T>& arg, size_t numRows)
 		{
 			DEBUG_TEXT_LEVEL1("OpenCL Reduce (2D): size = " << arg.getParent().size() << ", maxDevices = " << this->m_selected_spec->devices()

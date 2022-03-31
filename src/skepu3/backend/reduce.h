@@ -22,7 +22,7 @@ namespace skepu
 		 * how you instantiate it either by passing 1 user function (i.e. 1D reduction)
 		 * or 2 user function (i.e. 2D reduction). See code examples for more information.
 		 */
-		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel>
+		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		class Reduce1D : public SkeletonBase
 		{
 			
@@ -39,8 +39,12 @@ namespace skepu
 		public:
 			Reduce1D(CUDAKernel kernel) : m_cuda_kernel(kernel)
 			{
-#if defined(SKEPU_OPENCL) || defined(SKEPU_FPGA)
+#if defined(SKEPU_FPGA) 
+				FPGAKernel::initialize();
+#else
+#ifdef SKEPU_OPENCL
 				CLKernel::initialize();
+#endif
 #endif
 			}
 			
@@ -268,8 +272,8 @@ namespace skepu
 		 *  \p operator(). The Reduce skeleton needs to be created with
 		 *  a 1 or 2 binary user function for 1D reduction and 2D reduction respectively.
 		 */
-		template<typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel>
-		class Reduce2D : public Reduce1D<ReduceFuncRowWise, CUDARowWise, CLKernel>
+		template<typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel, typename FPGAKernel>
+		class Reduce2D : public Reduce1D<ReduceFuncRowWise, CUDARowWise, CLKernel, FPGAKernel>
 		{
 			using T = typename ReduceFuncRowWise::Ret;
 			
@@ -278,7 +282,7 @@ namespace skepu
 			static constexpr auto skeletonType = SkeletonType::Reduce2D;
 			static constexpr bool prefers_matrix = true;
 			
-			Reduce2D(CUDARowWise row, CUDAColWise col) : Reduce1D<ReduceFuncRowWise, CUDARowWise, CLKernel>(row), m_cuda_colwise_kernel(col) {}
+			Reduce2D(CUDARowWise row, CUDAColWise col) : Reduce1D<ReduceFuncRowWise, CUDARowWise, CLKernel, FPGAKernel>(row), m_cuda_colwise_kernel(col) {}
 			
 		private:
 			CUDAColWise m_cuda_colwise_kernel;
@@ -336,7 +340,7 @@ namespace skepu
 		public:
 			T operator()(Vector<T>& arg)
 			{
-				return Reduce1D<ReduceFuncRowWise, CUDARowWise, CLKernel>::operator()(arg);
+				return Reduce1D<ReduceFuncRowWise, CUDARowWise, CLKernel, FPGAKernel>::operator()(arg);
 			}
 			
 			T operator()(Matrix<T>& arg)

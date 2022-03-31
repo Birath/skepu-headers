@@ -21,14 +21,11 @@ namespace skepu
 		 *  \param device OpenCL device handle.
 		 */
 		template<typename T, typename Kernel>
-		void ExecuteReduceOnFPGA(size_t deviceID, Kernel kernel, size_t size, size_t numThreads, size_t numBlocks, cl_mem inP, cl_mem outP)
+		void ExecuteReduceOnFPGA(size_t deviceID, Kernel kernel, size_t size, cl_mem inP, cl_mem outP)
 		{
-			DEBUG_TEXT_LEVEL1("OpenCL FPGA Reduce (Single work-item kernel): size = " << size);
-			
-			const size_t globalWorkSize = numBlocks * numThreads;
-			const size_t sharedMemSize = (numThreads <= 32) ? 2 * numThreads * sizeof(T) : numThreads * sizeof(T);
-			
-			kernel(deviceID, numThreads, globalWorkSize, inP, outP, size, sharedMemSize);
+			DEBUG_TEXT_LEVEL1("OpenCL FPGA Reduce (Single work-item kernel): size = " << size << ", start value = " << startValue);
+						
+			kernel(deviceID, inP, outP, size);
 			// kernel(deviceID, numThreads, numThreads, outP, outP, numBlocks, sharedMemSize);
 		}
 		
@@ -39,8 +36,8 @@ namespace skepu
 		 *  rows the reduction will perform, writing the result to the first numRows elements of res.
 		 *  The function uses only \em one device which is decided by a parameter. A Helper method.
 		 */
-		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel>
-		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
+		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::reduceSingleThreadOneDim_FPGA(size_t deviceID, VectorIterator<T> &res, const MatrixIterator<T> &arg, size_t numRows)
 		{
 			Device_CL *device = this->m_environment->m_devices_CL[deviceID];
@@ -51,9 +48,6 @@ namespace skepu
 			// Setup parameters
 			size_t numBlocks, numThreads;
 			std::tie(numThreads, numBlocks) = getNumBlocksAndThreads(cols, this->m_selected_spec->GPUBlocks(), this->m_selected_spec->GPUThreads());
-			
-			// Decide size of shared memory
-			const size_t sharedMemSize = (numThreads <= 32) ? 2 * numThreads * sizeof(T) : numThreads * sizeof(T);
 			
 			// Copies the elements to the device all at once, better(?)
 			typename Matrix<T>::device_pointer_type_cl inMemP = arg.getParent().updateDevice_CL(arg.getAddress(), size, device, true);
@@ -79,7 +73,7 @@ namespace skepu
 				}
 				
 				// execute the reduction for the given row
-				ExecuteReduceOnFPGA<T>(deviceID, CLKernel::reduce, cols, numThreads, numBlocks, d_input, d_output);
+				ExecuteReduceOnFPGA<T>(deviceID, FPGAKernel::reduce, cols, d_input, d_output);
 				
 				// Now get the reduction result back for the given row
 				cl_helpers::copyDeviceToHost<T>(&*(res + r), d_output, 1, device, 0);
@@ -95,8 +89,8 @@ namespace skepu
 		}
 		
 		
-		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel>
-		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
+		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::reduceMultipleOneDim_FPGA(size_t numDevices, VectorIterator<T> &res, const MatrixIterator<T> &arg, size_t numRows)
 		{
 			const size_t rows = numRows;
@@ -150,7 +144,7 @@ namespace skepu
 					}
 					
 					// execute the reduction for the given row
-					ExecuteReduceOnFPGA<T>(i, CLKernel::reduce, cols, numThreads, numBlocks, d_input, d_output);
+					ExecuteReduceOnFPGA<T>(i, CLKernel::reduce, cols, res, d_input, d_output);
 					
 					// Now get the reduction result back for the given row
 					cl_helpers::copyDeviceToHost<T>(&*(res + r + numRowsPerSlice*i), d_output, 1, device, 0);
@@ -177,8 +171,8 @@ namespace skepu
 		 *  be written to Vector pointed to by VectorIterator res.
 		 *  Using \em OpenCL as backend.
 		 */
-		template <typename ReduceFunc, typename CUDAKernel, typename CLKernel>
-		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		template <typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
+		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::FPGA(VectorIterator<T> &res, const MatrixIterator<T>& arg, size_t numRows)
 		{
 			DEBUG_TEXT_LEVEL1("OpenCL Reduce (Matrix 1D): rows = " << numRows << ", cols = " << arg.getParent().total_cols()
@@ -204,9 +198,9 @@ namespace skepu
 		 *  Performs the Reduction on a range of elements with \em OpenCL as backend. Returns a scalar result. The function
 		 *  uses only \em one device which is decided by a parameter. A Helper method.
 		 */
-		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel>
+		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<typename Iterator>
-		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::reduceSingle_FPGA(size_t deviceID, size_t size, T &res, Iterator arg)
 		{
 			Device_CL *device = this->m_environment->m_devices_CL[deviceID];
@@ -218,7 +212,7 @@ namespace skepu
 			DeviceMemPointer_CL<T> *inMemP = arg.getParent().updateDevice_CL(arg.getAddress(), size, device, true);
 			DeviceMemPointer_CL<T> outMemP(&partialRes, numBlocks, device);
 			
-			ExecuteReduceOnFPGA<T>(deviceID, CLKernel::reduce, size, numThreads, numBlocks, inMemP->getDeviceDataPointer(), outMemP.getDeviceDataPointer());
+			ExecuteReduceOnFPGA<T>(deviceID, FPGAKernel::reduce, size, inMemP->getDeviceDataPointer(), outMemP.getDeviceDataPointer());
 			
 			// Copy back result
 			outMemP.changeDeviceData();
@@ -229,9 +223,9 @@ namespace skepu
 		}
 		
 		
-		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel>
+		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<typename Iterator>
-		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::reduceMultiple_FPGA(size_t numDevices, size_t size, T &res, Iterator arg)
 		{
 			const size_t numElemPerSlice = size / numDevices;
@@ -265,7 +259,7 @@ namespace skepu
 				// Copies the elements to the device
 				DeviceMemPointer_CL<T> *inMemP = arg.getParent().updateDevice_CL(arg.getAddress() + i * numElemPerSlice, numElem, device, true);
 				
-				ExecuteReduceOnFPGA<T>(i, CLKernel::reduce, numElem, numThreads[i], numBlocks[i], inMemP->getDeviceDataPointer(), outMemP[i]->getDeviceDataPointer());
+				ExecuteReduceOnFPGA<T>(i, FPGAKernel::reduce, numElem, inMemP->getDeviceDataPointer(), outMemP[i]->getDeviceDataPointer());
 				
 				// Copy back result
 				outMemP[i]->changeDeviceData();
@@ -289,9 +283,9 @@ namespace skepu
 		 *  on multiple devices, calling reduceNumDevices_CL(InputIterator inputBegin, InputIterator inputEnd, size_t numDevices).
 		 *  Using \em OpenCL as backend.
 		 */
-		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel>
+		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<typename Iterator>
-		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::FPGA(size_t size, T &res, Iterator arg)
 		{
 			DEBUG_TEXT_LEVEL1("OpenCL Reduce: size = " << size << ", maxDevices = " << this->m_selected_spec->devices()
@@ -319,8 +313,8 @@ namespace skepu
 		 *  Returns a scalar result. The function uses only \em one OpenCL device which is decided by a 
 		 *  parameter.
 		 */
-		template<typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel>
-		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel>
+		template<typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel, typename FPGAKernel>
+		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel, FPGAKernel>
 		::reduceSingle_FPGA(size_t deviceID, T &res, const MatrixIterator<T>& arg, size_t numRows)
 		{
 			Device_CL *device = this->m_environment->m_devices_CL[deviceID];
@@ -402,8 +396,8 @@ namespace skepu
 		 *  of elemets equally among the participating devices each reducing its part. The results are
 		 *  then reduced themselves on the CPU.
 		 */
-		template <typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel>
-		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel>
+		template <typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel, typename FPGAKernel>
+		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel, FPGAKernel>
 		::reduceNumDevices_FPGA(size_t numDevices, T &res, const MatrixIterator<T>& arg, size_t numRows)
 		{
 			const size_t rows = numRows;
@@ -507,8 +501,8 @@ namespace skepu
 		 *  internally calling the \em reduceSingle_CL or \em reduceNumDevices_CL depending upon number 
 		 *  of OpenCL devices specified/available.
 		 */
-		template<typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel>
-		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel>
+		template<typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel, typename FPGAKernel>
+		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel, FPGAKernel>
 		::FPGA(T &res, const MatrixIterator<T>& arg, size_t numRows)
 		{
 			DEBUG_TEXT_LEVEL1("OpenCL Reduce (2D): size = " << arg.getParent().size() << ", maxDevices = " << this->m_selected_spec->devices()

@@ -10,8 +10,8 @@ namespace skepu
 		 *  Performs the Reduction on a whole Matrix either row-wise or column-wise. Returns a \em SkePU vector of reduction result.
 		 *  Using the \em CPU as backend.
 		 */
-		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel>
-		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
+		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::CPU(Vector<T> &res, Matrix<T>& arg)
 		{
 			DEBUG_TEXT_LEVEL1("CPU Reduce (Matrix 1D): rows = " << arg.total_rows() << ", cols = " << arg.total_cols() << "\n");
@@ -37,9 +37,9 @@ namespace skepu
 		 *  Performs the Reduction on a range of elements. Returns a scalar result. Does the reduction on the \em CPU
 		 *  by iterating over all elements in the range.
 		 */
-		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel>
+		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<typename Iterator>
-		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::CPU(size_t size, T &res, Iterator arg)
 		{
 			DEBUG_TEXT_LEVEL1("CPU Reduce (1D): size = " << size << "\n");
@@ -60,8 +60,8 @@ namespace skepu
 		 *  input Matrix. Returns a scalar result.
 		 *  Using the \em CPU as backend.
 		 */
-		template<typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel>
-		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel>
+		template<typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel, typename FPGAKernel>
+		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel, FPGAKernel>
 		::CPU(T &res, Matrix<T>& arg)
 		{
 			const size_t rows = arg.total_rows();

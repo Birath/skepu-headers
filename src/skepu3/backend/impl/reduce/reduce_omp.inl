@@ -14,8 +14,8 @@ namespace skepu
 		 *  Performs the Reduction on a whole Matrix. Returns a \em SkePU vector of reduction result.
 		 *  Using \em OpenMP as backend.
 		 */
-		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel>
-		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
+		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::OMP(Vector<T> &res, Matrix<T>& arg)
 		{
 			const size_t rows = arg.total_rows();
@@ -44,9 +44,9 @@ namespace skepu
 		 *  \em OpenMP threads and does reduction of the parts in parallel. The results from each thread are then
 		 *  reduced on the CPU.
 		 */
-		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel>
+		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<typename Iterator>
-		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::OMP(size_t size, T &res, Iterator arg)
 		{
 			DEBUG_TEXT_LEVEL1("OpenMP Reduce (Vector): size = " << size << "\n");
@@ -82,8 +82,8 @@ namespace skepu
 		 *  input Matrix. Returns a scalar result.
 		 *  Using the \em OpenMP as backend.
 		 */
-		template<typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel>
-		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel>
+		template<typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel, typename FPGAKernel>
+		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel, FPGAKernel>
 		::OMP(T &res, Matrix<T>& arg)
 		{
 			const size_t rows = arg.total_rows();

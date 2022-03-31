@@ -14,8 +14,8 @@ namespace skepu
 		 *  Performs the Reduction on a whole Matrix. Returns a \em SkePU vector of reduction result.
 		 *  Using \em Hybrid execution backend.
 		 */
-		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel>
-		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
+		void Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::Hybrid(Vector<T> &res, Matrix<T>& arg)
 		{
 			const size_t rows = arg.total_rows();
@@ -113,9 +113,9 @@ namespace skepu
 		 *  CPU and a GPU backend and performs reduction of the parts in parallel. The results from each processing unit 
 		 *  are then reduced on the CPU.
 		 */
-		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel>
+		template<typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<typename Iterator>
-		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel>
+		typename ReduceFunc::Ret Reduce1D<ReduceFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::Hybrid(size_t size, T &res, Iterator arg)
 		{
 			// Partition the workload
@@ -190,8 +190,8 @@ namespace skepu
 		 *  input Matrix. Returns a scalar result.
 		 *  Using the \em Hybrid execution backend.
 		 */
-		template<typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel>
-		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel>
+		template<typename ReduceFuncRowWise, typename ReduceFuncColWise, typename CUDARowWise, typename CUDAColWise, typename CLKernel, typename FPGAKernel>
+		typename ReduceFuncRowWise::Ret Reduce2D<ReduceFuncRowWise, ReduceFuncColWise, CUDARowWise, CUDAColWise, CLKernel, FPGAKernel>
 		::Hybrid(T &res, Matrix<T>& arg)
 		{
 			const size_t rows = arg.total_rows();

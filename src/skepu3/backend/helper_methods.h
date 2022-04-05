@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
-#ifdef USE_INTEL_FPGA_OPENCL
+#ifdef SKEPU_FPGA
 #include <stdlib.h>
 #endif
 namespace skepu

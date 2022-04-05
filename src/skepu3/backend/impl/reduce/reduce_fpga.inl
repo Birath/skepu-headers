@@ -23,7 +23,7 @@ namespace skepu
 		template<typename T, typename Kernel>
 		void ExecuteReduceOnFPGA(size_t deviceID, Kernel kernel, size_t size, cl_mem inP, cl_mem outP)
 		{
-			DEBUG_TEXT_LEVEL1("OpenCL FPGA Reduce (Single work-item kernel): size = " << size << ", start value = " << startValue);
+			DEBUG_TEXT_LEVEL1("OpenCL FPGA Reduce (Single work-item kernel): size = " << size);
 						
 			kernel(deviceID, inP, outP, size);
 			// kernel(deviceID, numThreads, numThreads, outP, outP, numBlocks, sharedMemSize);

@@ -89,7 +89,7 @@ namespace skepu
 		
 #ifdef SKEPU_OPENCL
 			init_CL();
-#ifndef USE_INTEL_FPGA_OPENCL //TEMP FIX for INTEL FPGA OpenCL
+#ifndef SKEPU_FPGA //TEMP FIX for INTEL FPGA OpenCL
 			createOpenCLProgramForMatrixTranspose(); 
 #endif
 #endif
@@ -465,9 +465,15 @@ template <typename T>
 				if (platform_ind == no_platforms) // should not occur in normal situations.
 					SKEPU_ERROR("ERROR! No platform is selected");
 				
-				//Get number of devices in system (either CPU or GPU)
+				//Get number of devices in system (either CPU or GPU or accelator)
+				#ifdef SKEPU_FPGA
+				cl_uint numDevices;
+				clGetDeviceIDs(temp_platforms[platform_ind], /*CL_DEVICE_TYPE_CPU |*/  CL_DEVICE_TYPE_ALL, 0, NULL, &numDevices);
+				#else
 				cl_uint numDevices;
 				clGetDeviceIDs(temp_platforms[platform_ind], /*CL_DEVICE_TYPE_CPU |*/ CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_ACCELERATOR, 0, NULL, &numDevices);
+				#endif
+
 				
 				if (numDevices == 0)
 					SKEPU_ERROR("No SKEPU_OPENCL devices found!\n");
@@ -484,7 +490,12 @@ template <typename T>
 				
 				//Create and get those devices found
 				cl_device_id deviceList[MAX_GPU_DEVICES];
-				err = clGetDeviceIDs(temp_platforms[platform_ind], /*CL_DEVICE_TYPE_CPU |*/ CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_ACCELERATOR, numDevices, deviceList, &numDevices);
+				#ifdef SKEPU_FPGA
+				err = clGetDeviceIDs(temp_platforms[platform_ind], CL_DEVICE_TYPE_ALL, numDevices, deviceList, &numDevices);
+				#else
+				cl_uint numDevices;
+				clGetDeviceIDs(temp_platforms[platform_ind], /*CL_DEVICE_TYPE_CPU |*/ CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_ACCELERATOR, 0, NULL, &numDevices);
+				#endif
 				CL_CHECK_ERROR(err, "Error getting OpenCL devices");
 				
 				cl_context context = clCreateContext(0, numDevices, deviceList, NULL, NULL, &err);

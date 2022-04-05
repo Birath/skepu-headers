@@ -16,8 +16,8 @@ namespace skepu
 		 *  Then the function is called recursively to scan these partial results, which in turn can produce partial results and so on.
 		 *  This continues until only one block with partial results is left. Used by multi-GPU CUDA implementation.
 		 */
-		template <typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel>
-		typename ScanFunc::Ret Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel>
+		template <typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel, typename FPGAKernel>
+		typename ScanFunc::Ret Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel, FPGAKernel>
 		::scanLargeVectorRecursivelyM_CU(DeviceMemPointer_CU<T>* input, DeviceMemPointer_CU<T>* output, const std::vector<DeviceMemPointer_CU<T>*>& blockSums, size_t numElements, ScanMode mode, T init, Device_CU* device, size_t level)
 		{
 			const unsigned int deviceID = device->getDeviceID();
@@ -62,8 +62,8 @@ namespace skepu
 		 *  Then the function is called recursively to scan these partial results, which in turn can produce partial results and so on.
 		 *  This continues until only one block with partial results is left.
 		 */
-		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel>
-		typename ScanFunc::Ret Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel>
+		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel, typename FPGAKernel>
+		typename ScanFunc::Ret Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel, FPGAKernel>
 		::scanLargeVectorRecursively_CU(size_t deviceID, DeviceMemPointer_CU<T>* input, DeviceMemPointer_CU<T>* output, const std::vector<DeviceMemPointer_CU<T>*>& blockSums, size_t size, ScanMode mode, T init, size_t level)
 		{
 			const size_t numThreads = this->m_selected_spec->GPUThreads();
@@ -116,9 +116,9 @@ namespace skepu
 		}
 		
 		
-		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel>
+		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel, typename FPGAKernel>
 		template<typename OutIterator, typename InIterator>
-		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel>
+		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel, FPGAKernel>
 		::scanMulti_CU(size_t numDevices, size_t size, OutIterator res, InIterator arg, ScanMode mode, T initial)
 		{
 			const size_t numElemPerSlice = size / numDevices;
@@ -176,9 +176,9 @@ namespace skepu
 		 *  Performs the Scan on an input range using \em CUDA with a separate output range. Used when scanning the array on
 		 *  one device using one host thread. Allocates space for intermediate results from each block, and then calls scanLargeVectorRecursively_CU.
 		 */
-		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel>
+		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel, typename FPGAKernel>
 		template<typename OutIterator, typename InIterator>
-		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel>
+		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel, FPGAKernel>
 		::scanSingleThread_CU(size_t deviceID, size_t size, OutIterator res, InIterator arg, ScanMode mode, T initial)
 		{
 			// Setup parameters
@@ -203,9 +203,9 @@ namespace skepu
 		 *  the scan on one device, calling scanSingleThread_CU or
 		 *  on multiple devices, dividing the work between multiple devices.
 		 */
-		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel>
+		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel, typename FPGAKernel>
 		template<typename OutIterator, typename InIterator>
-		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel>
+		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel, FPGAKernel>
 		::CU(size_t size, OutIterator res, InIterator arg, ScanMode mode, T initial)
 		{
 			DEBUG_TEXT_LEVEL1("CUDA Scan: size = " << size << ", maxDevices = " << this->m_selected_spec->devices()

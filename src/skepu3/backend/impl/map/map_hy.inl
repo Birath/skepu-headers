@@ -20,9 +20,9 @@ namespace skepu
 	namespace backend
 	{
 	
-		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs> 
-		void Map<arity, MapFunc, CUDAKernel, CLKernel>
+		void Map<arity, MapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::Hybrid(size_t size, pack_indices<OI...> oi, pack_indices<EI...> ei, pack_indices<AI...> ai, pack_indices<CI...> ci, CallArgs&&... args)
 		{
 			static constexpr auto proxy_tags = typename MapFunc::ProxyTags{};

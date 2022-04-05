@@ -6,9 +6,9 @@ namespace skepu
 {
 	namespace backend
 	{
-		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel>
+		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel, typename FPGAKernel>
 		template<typename OutIterator, typename InIterator>
-		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel>
+		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel, FPGAKernel>
 		::CPU(size_t size, OutIterator res, InIterator arg, ScanMode mode, T initial)
 		{
 			// Make sure we are properly synched with device data

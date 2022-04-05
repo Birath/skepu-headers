@@ -23,7 +23,7 @@ namespace skepu
 		 *  the mapping function uses (one, two or three). There are also variants which takes iterators as inputs and those that
 		 *  takes whole containers (vectors, matrices). The container variants are merely wrappers for the functions which takes iterators as parameters.
 		 */
-		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		class Map : public SkeletonBase
 		{
 			// ==========================    Type definitions   ==========================
@@ -58,7 +58,9 @@ namespace skepu
 
 			Map(CUDAKernel kernel) : m_cuda_kernel(kernel)
 			{
-#if defined(SKEPU_OPENCL) || defined(SKEPU_FPGA)
+#if defined(SKEPU_FPGA)
+				FPGAKernel::initialize();
+#else if defined(SKEPU_OPENCL)
 				CLKernel::initialize();
 #endif
 			}

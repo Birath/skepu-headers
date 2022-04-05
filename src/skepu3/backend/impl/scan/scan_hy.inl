@@ -50,9 +50,9 @@ namespace skepu
 {
 	namespace backend
 	{
-		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel>
+		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel, typename FPGAKernel>
 		template<typename OutIterator, typename InIterator>
-		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel>
+		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel, FPGAKernel>
 		::Hybrid(size_t size, OutIterator res, InIterator arg, ScanMode mode, T initial)
 		{
 			// Make sure we are properly synched with device data
@@ -179,9 +179,9 @@ namespace skepu
 		 * Utility function to apply the user function with \em value to \em size number of elements in memory pointed to by \em OutIterator. 
 		 * Divides the work between \em numDevices GPUs using CUDA.
 		 */
-		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel>
+		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel, typename FPGAKernel>
 		template<typename OutIterator>
-		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel>
+		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel, FPGAKernel>
 		::scanAddGPU_CU(size_t numDevices, size_t size, OutIterator res, T value) 
 		{
 			const size_t numElemPerSlice = size / numDevices;
@@ -215,9 +215,9 @@ namespace skepu
 		 * Utility function to apply the user function with \em value to \em size number of elements in memory pointed to by \em OutIterator. 
 		 * Divides the work between \em numDevices GPUs using OpenCL.
 		 */
-		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel>
+		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel, typename FPGAKernel>
 		template<typename OutIterator>
-		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel>
+		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel, FPGAKernel>
 		::scanAddGPU_CL(size_t numDevices, size_t size, OutIterator res, T value) 
 		{
 			const size_t numElemPerSlice = size / numDevices;

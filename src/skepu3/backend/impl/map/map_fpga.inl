@@ -8,9 +8,9 @@ namespace skepu
 {
 	namespace backend
 	{
-		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs> 
-		void Map<arity, MapFunc, CUDAKernel, CLKernel>
+		void Map<arity, MapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::mapNumDevices_FPGA(size_t startIdx, size_t numDevices, size_t size, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			constexpr size_t numKernelArgs = numArgs + 3;
@@ -49,8 +49,8 @@ namespace skepu
 				auto random = this->template prepareRandom_CL<MapFunc::randomCount>(size, threads);
 				auto randomMemP = random.updateDevice_CL(random.getAddress(), threads, device, true);
 				
-				CLKernel::map(
-					i, numThreads, numBlocks * numThreads,
+				FPGAKernel::map(
+					i,
 					std::get<OI>(outMemP)...,
 					randomMemP,
 					std::get<EI-outArity>(elwiseMemP)...,
@@ -67,9 +67,9 @@ namespace skepu
 		}
 		
 		
-		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs> 
-		void Map<arity, MapFunc, CUDAKernel, CLKernel>
+		void Map<arity, MapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::FPGA(size_t startIdx, size_t size, pack_indices<OI...> oi, pack_indices<EI...> ei, pack_indices<AI...> ai, pack_indices<CI...> ci, CallArgs&&... args)
 		{
 			DEBUG_TEXT_LEVEL1("OpenCL FPGA Map: size = " << size << ", maxDevices = " << this->m_selected_spec->devices()

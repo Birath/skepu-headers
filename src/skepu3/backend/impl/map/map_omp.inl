@@ -10,9 +10,9 @@ namespace skepu
 {
 	namespace backend
 	{
-		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs> 
-		void Map<arity, MapFunc, CUDAKernel, CLKernel>
+		void Map<arity, MapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::OMP(size_t size, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			DEBUG_TEXT_LEVEL1("OpenMP Map: size = " << size);

@@ -29,7 +29,7 @@ namespace skepu
 		 *  \p operator(). There are a few overloaded variants of this operator depending on if a seperate output vector is provided
 		 *  or if vectors or iterators are used as parameters.
 		 */
-		template <typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel>
+		template <typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel, typename FPGAKernel>
 		class Scan : public SkeletonBase
 		{
 			
@@ -46,7 +46,9 @@ namespace skepu
 			Scan(CUDAScan scan, CUDAScanUpdate update, CUDAScanAdd add)
 			: m_cuda_scan_kernel(scan), m_cuda_scan_update_kernel(update), m_cuda_scan_add_kernel(add)
 			{
-#ifdef SKEPU_OPENCL
+#if defined(SKEPU_FPGA)
+				FPGAKernel::initialize();
+#else if defined(SKEPU_OPENCL)
 				CLKernel::initialize();
 #endif
 			}
@@ -121,6 +123,11 @@ namespace skepu
 					this->CL(size, res, arg, this->m_mode, this->m_initial);
 					break;
 #endif
+				case Backend::Type::FPGA:
+#ifdef SKEPU_FPGA
+					this->FPGA(size, res, arg, this->m_mode, this->m_initial);
+					break;
+#endif
 				case Backend::Type::OpenMP:
 #ifdef SKEPU_OPENMP
 					this->OMP(size, res, arg, this->m_mode, this->m_initial);
@@ -172,6 +179,20 @@ namespace skepu
 			template<typename OutIterator, typename InIterator>
 			void scanNumDevices_CL(size_t numDevices, size_t size, OutIterator res, InIterator arg, ScanMode mode, T initial);
 			
+#endif
+
+#ifdef SKEPU_FPGA
+			template<typename OutIterator, typename InIterator>
+			void FPGA(size_t size, OutIterator res, InIterator arg, ScanMode mode, T initial);
+			
+			void scanLargeVectorRecursively_FPGA(DeviceMemPointer_CL<T>* res, size_t deviceID, DeviceMemPointer_CL<T>* input, DeviceMemPointer_CL<T>* output,
+				const std::vector<DeviceMemPointer_CL<T>*>& blockSums, size_t numElements, ScanMode mode, T initial, size_t level = 0);
+			
+			template<typename OutIterator, typename InIterator>
+			void scanSingle_FPGA(size_t deviceID, size_t size, OutIterator res, InIterator arg, ScanMode mode, T initial);
+			
+			template<typename OutIterator, typename InIterator>
+			void scanNumDevices_FPGA(size_t numDevices, size_t size, OutIterator res, InIterator arg, ScanMode mode, T initial);
 #endif
 			
 #ifdef SKEPU_HYBRID
@@ -235,5 +256,6 @@ Scan(T op)
 #include "impl/scan/scan_cl.inl"
 #include "impl/scan/scan_cu.inl"
 #include "impl/scan/scan_hy.inl"
+#include "impl/scan/scan_fpga.inl"
 
 #endif

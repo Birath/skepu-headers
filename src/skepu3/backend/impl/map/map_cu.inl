@@ -12,9 +12,9 @@ namespace skepu
 {
 	namespace backend
 	{
-		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename ...CallArgs>
-		void Map<arity, MapFunc, CUDAKernel, CLKernel>
+		void Map<arity, MapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::mapSingleThread_CU(size_t deviceID, size_t startIdx, size_t size, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto oArgs = std::forward_as_tuple(get<OI>(std::forward<CallArgs>(args)...)...);
@@ -71,9 +71,9 @@ namespace skepu
 		}
 		
 		
-		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename ...CallArgs>
-		void Map<arity, MapFunc, CUDAKernel, CLKernel>
+		void Map<arity, MapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::mapMultiStream_CU(size_t deviceID, size_t startIdx, size_t size, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			CHECK_CUDA_ERROR(cudaSetDevice(deviceID));
@@ -161,9 +161,9 @@ namespace skepu
 		}
 		
 		
-		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename ...CallArgs>
-		void Map<arity, MapFunc, CUDAKernel, CLKernel>
+		void Map<arity, MapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::mapMultiStreamMultiGPU_CU(size_t useNumGPU, size_t startIdx, size_t size, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 #ifdef USE_PINNED_MEMORY
@@ -267,9 +267,9 @@ namespace skepu
 		}
 		
 		
-		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename ...CallArgs>
-		void Map<arity, MapFunc, CUDAKernel, CLKernel>
+		void Map<arity, MapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::mapSingleThreadMultiGPU_CU(size_t numDevices, size_t startIdx, size_t size, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			const size_t numElemPerSlice = size / numDevices;
@@ -349,9 +349,9 @@ namespace skepu
 		}
 		
 		
-		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t arity, typename MapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void Map<arity, MapFunc, CUDAKernel, CLKernel>
+		void Map<arity, MapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::CUDA(size_t startIdx, size_t size, pack_indices<OI...> oi, pack_indices<EI...> ei, pack_indices<AI...> ai, pack_indices<CI...> ci, CallArgs&&... args)
 		{
 			DEBUG_TEXT_LEVEL1("CUDA Map: size = " << size << ", maxDevices = " << this->m_selected_spec->devices()

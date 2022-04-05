@@ -1,8 +1,8 @@
-/*! \file scan_cl.inl
+/*! \file scan_fpga.inl
  *  \brief Contains the definitions of OpenCL specific member functions for the Scan skeleton.
  */
 
-#ifdef SKEPU_OPENCL
+#ifdef SKEPU_FPGA
 
 namespace skepu
 {
@@ -15,7 +15,7 @@ namespace skepu
 		 */
 		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel, typename FPGAKernel>
 		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel, FPGAKernel>
-		::scanLargeVectorRecursively_CL(
+		::scanLargeVectorRecursively_FPGA(
 			DeviceMemPointer_CL<T>* res, size_t deviceID,
 			DeviceMemPointer_CL<T>* input, DeviceMemPointer_CL<T>* output, const std::vector<DeviceMemPointer_CL<T>*>& blockSums,
 			size_t size, ScanMode mode, T initial, size_t level
@@ -27,44 +27,13 @@ namespace skepu
 			
 			DEBUG_TEXT_LEVEL1("OpenCL Scan: level = " << level << ", size = " << size << ", numBlocks = " << numBlocks << ", numThreads = " << numThreads);
 			
-			CLKernel::scan(
-				deviceID, numThreads, numBlocks * numThreads,
-				input, output, blockSums[level], numThreads, size,
-				sizeof(T) * numThreads * 2
-			);
-			
-			if (numBlocks > 1)
-			{
-				const size_t totalNumBlocks = size / numThreads + (size % numThreads == 0 ? 0:1);
-				this->scanLargeVectorRecursively_CL(nullptr, deviceID, blockSums[level], blockSums[level], blockSums, totalNumBlocks, mode, initial, level+1);
-			}
-			
-			CLKernel::scanUpdate(
-				deviceID, numThreads, numBlocks * numThreads,
-				output, blockSums[level], isInclusive, initial, size, res,
-				sizeof(T) * numThreads
+			FPGAKernel::scan(
+				deviceID, 
+				input, output, size,
+				isInclusive
 			);
 		}
 		
-		
-		template<typename T>
-		std::vector<DeviceMemPointer_CL<T>*> allocateBlockSums(size_t size, size_t numThreads, Device_CL *device)
-		{
-			size_t numEl = size;
-			size_t numBlocks;
-			std::vector<DeviceMemPointer_CL<T>*> blockSums;
-			
-			do
-			{
-				numBlocks = numEl / numThreads + (numEl % numThreads == 0 ? 0:1);
-				if (numBlocks >= 1)
-					blockSums.push_back(new DeviceMemPointer_CL<T>(NULL, numBlocks, device));
-				numEl = numBlocks;
-			}
-			while (numEl > 1);
-			
-			return blockSums;
-		}
 		
 		/*!
 		 *  Performs the Scan on an input range using \em OpenCL with a separate output range. Only one device is used for the scan.
@@ -73,22 +42,24 @@ namespace skepu
 		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel, typename FPGAKernel>
 		template <typename OutIterator, typename InIterator>
 		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel, FPGAKernel>
-		::scanSingle_CL(size_t deviceID, size_t size, OutIterator res, InIterator arg, ScanMode mode, T initial)
+		::scanSingle_FPGA(size_t deviceID, size_t size, OutIterator res, InIterator arg, ScanMode mode, T initial)
 		{
 			// Setup parameters
 			Device_CL *device = this->m_environment->m_devices_CL[deviceID];
-			const size_t numThreads = this->m_selected_spec->GPUThreads();
-			const std::vector<DeviceMemPointer_CL<T>*> blockSums = allocateBlockSums<T>(size, numThreads, device);
 			
 			typename InIterator::device_pointer_type_cl inMemP = arg.getParent().updateDevice_CL(arg.getAddress(), size, device, true);
 			typename OutIterator::device_pointer_type_cl outMemP = res.getParent().updateDevice_CL(res.getAddress(), size, device, false);
 			
-			this->scanLargeVectorRecursively_CL(nullptr, deviceID, inMemP, outMemP, blockSums, size, mode, initial);
-			outMemP->changeDeviceData();
+			const int isInclusive = mode == ScanMode::Inclusive ? 1 : 0;
 			
-			// Clean up
-			for (size_t i = 0; i < blockSums.size(); ++i)
-				delete blockSums[i];
+			DEBUG_TEXT_LEVEL1("OpenCL Scan: size = " << size);
+			
+			FPGAKernel::scan(
+				deviceID, 
+				inMemP, outMemP, size,
+				isInclusive
+			);
+			outMemP->changeDeviceData();
 		}
 
 		/*!
@@ -100,7 +71,7 @@ namespace skepu
 		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel, typename FPGAKernel>
 		template <typename OutIterator, typename InIterator>
 		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel, FPGAKernel>
-		::scanNumDevices_CL(size_t numDevices, size_t size, OutIterator res, InIterator arg, ScanMode mode, T initial)
+		::scanNumDevices_FPGA(size_t numDevices, size_t size, OutIterator res, InIterator arg, ScanMode mode, T initial)
 		{
 			const size_t numElemPerSlice = size / numDevices;
 			const size_t rest = size % numDevices;
@@ -130,7 +101,7 @@ namespace skepu
 				
 				T ret;
 				DeviceMemPointer_CL<T> retMemP(&ret, 1, device);
-				this->scanLargeVectorRecursively_CL(&retMemP, i, inMemP[i], outMemP[i], blockSums[i], numElements, mode, initial);
+				this->scanLargeVectorRecursively_FPGA(&retMemP, i, inMemP[i], outMemP[i], blockSums[i], numElements, mode, initial);
 				retMemP.changeDeviceData();
 				retMemP.copyDeviceToHost();
 			
@@ -168,7 +139,7 @@ namespace skepu
 		template<typename ScanFunc, typename CUDAScan, typename CUDAScanUpdate, typename CUDAScanAdd, typename CLKernel, typename FPGAKernel>
 		template<typename OutIterator, typename InIterator>
 		void Scan<ScanFunc, CUDAScan, CUDAScanUpdate, CUDAScanAdd, CLKernel, FPGAKernel>
-		::CL(size_t size, OutIterator res, InIterator arg, ScanMode mode, T initial)
+		::FPGA(size_t size, OutIterator res, InIterator arg, ScanMode mode, T initial)
 		{
 			DEBUG_TEXT_LEVEL1("OpenCL Scan: size = " << size << ", maxDevices = " << this->m_selected_spec->devices()
 				<< ", maxBlocks = " << this->m_selected_spec->GPUBlocks() << ", maxThreads = " << this->m_selected_spec->GPUThreads());
@@ -178,12 +149,12 @@ namespace skepu
 #ifndef SKEPU_DEBUG_FORCE_MULTI_GPU_IMPL
 			
 			if (numDevices <= 1)
-				this->scanSingle_CL(0, size, res, arg, mode, initial);
+				this->scanSingle_FPGA(0, size, res, arg, mode, initial);
 			else
 			
 #endif // SKEPU_DEBUG_FORCE_MULTI_GPU_IMPL
 				
-				this->scanNumDevices_CL(numDevices, size, res, arg, mode, initial);
+				this->scanNumDevices_FPGA(numDevices, size, res, arg, mode, initial);
 		}
 	}
 }

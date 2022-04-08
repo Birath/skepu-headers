@@ -493,8 +493,7 @@ template <typename T>
 				#ifdef SKEPU_FPGA
 				err = clGetDeviceIDs(temp_platforms[platform_ind], CL_DEVICE_TYPE_ALL, numDevices, deviceList, &numDevices);
 				#else
-				cl_uint numDevices;
-				clGetDeviceIDs(temp_platforms[platform_ind], /*CL_DEVICE_TYPE_CPU |*/ CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_ACCELERATOR, 0, NULL, &numDevices);
+				err = clGetDeviceIDs(temp_platforms[platform_ind], /*CL_DEVICE_TYPE_CPU |*/ CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_ACCELERATOR, numDevices, deviceList, &numDevices);
 				#endif
 				CL_CHECK_ERROR(err, "Error getting OpenCL devices");
 				

@@ -46,9 +46,11 @@ namespace skepu
 			Scan(CUDAScan scan, CUDAScanUpdate update, CUDAScanAdd add)
 			: m_cuda_scan_kernel(scan), m_cuda_scan_update_kernel(update), m_cuda_scan_add_kernel(add)
 			{
-#if defined(SKEPU_FPGA)
+#ifdef SKEPU_FPGA
 				FPGAKernel::initialize();
-#else if defined(SKEPU_OPENCL)
+#endif
+
+#ifdef SKEPU_OPENCL
 				CLKernel::initialize();
 #endif
 			}

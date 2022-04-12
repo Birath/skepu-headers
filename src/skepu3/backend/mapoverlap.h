@@ -26,7 +26,7 @@ namespace skepu
 		 *  non-separable matrix overlap which considers diagonal neighbours as well besides row- and column-wise neighbours, please see \p src/MapOverlap2D.
 		 *  MapOverlap2D class can be used by including same header file (i.e., mapoverlap.h) but class name is different (MapOverlap2D).
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		class MapOverlap1D: public SkeletonBase
 		{
 			using Ret = typename MapOverlapFunc::Ret;
@@ -55,6 +55,10 @@ namespace skepu
 			MapOverlap1D(CUDAKernel kernel, C2 k2, C3 k3, C4 k4)
 			: m_cuda_kernel(kernel), m_cuda_rowwise_kernel(k2), m_cuda_colwise_kernel(k3), m_cuda_colwise_multi_kernel(k4)
 			{
+#ifdef SKEPU_FPGA
+				FPGAKernel::initialize();
+#endif
+
 #ifdef SKEPU_OPENCL
 				CLKernel::initialize();
 #endif
@@ -216,6 +220,36 @@ namespace skepu
 			bool sharedMemAvailable_CL(size_t &numThreads, size_t deviceID);
 			
 #endif
+
+#ifdef SKEPU_FPGA
+		private:
+			template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
+			void vector_FPGA(size_t startIdx, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args);
+			
+			template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
+			void rowwise_FPGA(size_t numrows, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args);
+			
+			template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
+			void colwise_FPGA(size_t numcols, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args);
+		
+			
+			template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
+			void mapOverlapSingle_FPGA(size_t deviceID, size_t startIdx, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args);
+
+			template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
+			void mapOverlapSingle_FPGA_Row(size_t deviceID, size_t numrows, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args);
+
+			template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
+			void mapOverlapSingle_FPGA_Col(size_t deviceID, size_t numcols, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args);
+			
+			
+			template<typename T>
+			int getThreadNumber_FPGA(size_t width, size_t numThreads, size_t deviceID);
+			
+			template<typename T>
+			bool sharedMemAvailable_FPGA(size_t &numThreads, size_t deviceID);
+			
+#endif
 			
 			
 		
@@ -270,6 +304,12 @@ namespace skepu
 					this->vector_OpenCL(0, p, out_indices, elwise_indices, any_indices, const_indices, std::forward<CallArgs>(args)...);
 					break;
 #endif
+				case Backend::Type::FPGA:
+#ifdef SKEPU_FPGA
+					this->vector_FPGA(0, p, out_indices, elwise_indices, any_indices, const_indices, std::forward<CallArgs>(args)...);
+					break;
+#endif
+
 				case Backend::Type::OpenMP:
 #ifdef SKEPU_OPENMP
 					this->vector_OpenMP(p, out_indices, elwise_indices, any_indices, const_indices, std::forward<CallArgs>(args)...);
@@ -331,6 +371,11 @@ namespace skepu
 							this->colwise_OpenCL(size_j, p, out_indices, elwise_indices, any_indices, const_indices, std::forward<CallArgs>(args)...);
 							break;
 #endif
+						case Backend::Type::FPGA:
+#ifdef SKEPU_FPGA
+							this->colwise_FPGA(size_j, p, out_indices, elwise_indices, any_indices, const_indices, std::forward<CallArgs>(args)...);
+							break;
+#endif
 						case Backend::Type::OpenMP:
 #ifdef SKEPU_OPENMP
 							this->colwise_OpenMP(p, out_indices, elwise_indices, any_indices, const_indices, std::forward<CallArgs>(args)...);
@@ -358,6 +403,11 @@ namespace skepu
 						case Backend::Type::OpenCL:
 #ifdef SKEPU_OPENCL
 							this->rowwise_OpenCL(size_i, p, out_indices, elwise_indices, any_indices, const_indices, std::forward<CallArgs>(args)...);
+							break;
+#endif
+						case Backend::Type::FPGA:
+#ifdef SKEPU_FPGA
+							this->rowwise_FPGA(size_i, p, out_indices, elwise_indices, any_indices, const_indices, std::forward<CallArgs>(args)...);
 							break;
 #endif
 						case Backend::Type::OpenMP:
@@ -403,7 +453,7 @@ namespace skepu
 		
 		
 		
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		class MapOverlap2D: public SkeletonBase
 		{
 			using Ret = typename MapOverlapFunc::Ret;
@@ -507,6 +557,15 @@ namespace skepu
 			void mapOverlapMultipleThread_CL(size_t numDevices, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args);
 			
 #endif
+
+#ifdef SKEPU_FPGA
+			
+			template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
+			void helper_FPGA(Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args);
+			
+			template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
+			void mapOverlapSingleThread_FPGA(size_t deviceID, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args);			
+#endif
 		
 #ifdef SKEPU_CUDA
 			
@@ -569,6 +628,11 @@ namespace skepu
 					this->helper_OpenCL(p, out_indices, elwise_indices, any_indices, const_indices, std::forward<CallArgs>(args)...);
 					break;
 #endif
+				case Backend::Type::FPGA:
+#ifdef SKEPU_FPGA
+					this->helper_FPGA(p, out_indices, elwise_indices, any_indices, const_indices, std::forward<CallArgs>(args)...);
+					break;
+#endif
 				case Backend::Type::OpenMP:
 #ifdef SKEPU_OPENMP
 					this->helper_OpenMP(p, out_indices, elwise_indices, any_indices, const_indices, std::forward<CallArgs>(args)...);
@@ -610,7 +674,7 @@ namespace skepu
 		
 		
 		
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		class MapOverlap3D: public SkeletonBase
 		{
 			using Ret = typename MapOverlapFunc::Ret;
@@ -716,6 +780,16 @@ namespace skepu
 			void mapOverlapMultipleThread_CL(size_t numDevices, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args);
 			
 #endif
+
+#ifdef SKEPU_FPGA
+			
+			template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
+			void helper_FPGA(Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args);
+			
+			template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
+			void mapOverlapSingleThread_FPGA(size_t deviceID, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args);
+						
+#endif
 		
 #ifdef SKEPU_CUDA
 			
@@ -782,6 +856,13 @@ namespace skepu
 					this->helper_OpenCL(p, out_indices, elwise_indices, any_indices, const_indices, std::forward<CallArgs>(args)...);
 					break;
 #endif
+
+				case Backend::Type::FPGA:
+#ifdef SKEPU_FPGA
+					this->helper_FPGA(p, out_indices, elwise_indices, any_indices, const_indices, std::forward<CallArgs>(args)...);
+					break;
+#endif
+
 				case Backend::Type::OpenMP:
 #ifdef SKEPU_OPENMP
 					this->helper_OpenMP(p, out_indices, elwise_indices, any_indices, const_indices, std::forward<CallArgs>(args)...);
@@ -823,7 +904,7 @@ namespace skepu
 		
 		
 		
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		class MapOverlap4D: public SkeletonBase
 		{
 			using Ret = typename MapOverlapFunc::Ret;
@@ -931,7 +1012,17 @@ namespace skepu
 			void mapOverlapMultipleThread_CL(size_t numDevices, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args);
 			
 #endif
-		
+
+#ifdef SKEPU_FPGA
+			
+			template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
+			void helper_FPGA(Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args);
+			
+			template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
+			void mapOverlapSingleThread_FPGA(size_t deviceID, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args);
+			
+#endif
+	
 #ifdef SKEPU_CUDA
 			
 			template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
@@ -997,6 +1088,11 @@ namespace skepu
 				case Backend::Type::OpenCL:
 #ifdef SKEPU_OPENCL
 					this->helper_OpenCL(p, out_indices, elwise_indices, any_indices, const_indices, std::forward<CallArgs>(args)...);
+					break;
+#endif
+				case Backend::Type::FPGA:
+#ifdef SKEPU_FPGA
+					this->helper_FPGA(p, out_indices, elwise_indices, any_indices, const_indices, std::forward<CallArgs>(args)...);
 					break;
 #endif
 				case Backend::Type::OpenMP:
@@ -1146,5 +1242,6 @@ MapOverlap(T op)
 #include "impl/mapoverlap/mapoverlap_cl.inl"
 #include "impl/mapoverlap/mapoverlap_cu.inl"
 #include "impl/mapoverlap/mapoverlap_hy.inl"
+#include "impl/mapoverlap/mapoverlap_fpga.inl"
 
 #endif // MAPOVERLAP_H

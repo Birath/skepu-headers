@@ -6,9 +6,9 @@ namespace skepu
 {
 	namespace backend
 	{
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::vector_CPU(Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &arg = get<outArity>(std::forward<CallArgs>(args)...);
@@ -71,9 +71,9 @@ namespace skepu
 		}
 		
 		
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::colwise_CPU(Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &arg = get<outArity>(std::forward<CallArgs>(args)...);
@@ -152,9 +152,9 @@ namespace skepu
 		}
 		
 		
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::rowwise_CPU(Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &arg = get<outArity>(std::forward<CallArgs>(args)...);
@@ -234,9 +234,9 @@ namespace skepu
 		
 		
 		
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap2D<MapOverlapFunc, CUDAKernel, CLKernel>
+		void MapOverlap2D<MapOverlapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::helper_CPU(Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			size_t size_i = get<0>(std::forward<CallArgs>(args)...).size_i();
@@ -275,9 +275,9 @@ namespace skepu
 		
 		
 		
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI,  typename... CallArgs>
-		void MapOverlap3D<MapOverlapFunc, CUDAKernel, CLKernel>
+		void MapOverlap3D<MapOverlapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::helper_CPU(Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			size_t size_i = get<0>(std::forward<CallArgs>(args)...).size_i();
@@ -318,9 +318,9 @@ namespace skepu
 		
 		
 		
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap4D<MapOverlapFunc, CUDAKernel, CLKernel>
+		void MapOverlap4D<MapOverlapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::helper_CPU(Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			size_t size_i = get<0>(std::forward<CallArgs>(args)...).size_i();

@@ -13,9 +13,9 @@ namespace skepu
 		/*!
 		 *  Performs the MapOverlap on a range of elements using \em OpenMP as backend and a seperate output range.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::vector_OpenMP(Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &arg = get<outArity>(std::forward<CallArgs>(args)...);
@@ -89,9 +89,9 @@ namespace skepu
 		 *  Performs the row-wise MapOverlap on a range of elements on the \em OpenMP with a seperate output range.
 		 *  Used internally by other methods to apply row-wise mapoverlap operation.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::rowwise_OpenMP(Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &arg = get<outArity>(std::forward<CallArgs>(args)...);
@@ -174,9 +174,9 @@ namespace skepu
 		 *  Performs the column-wise MapOverlap on a range of elements on the \em OpenMP with a seperate output range.
 		 *  Used internally by other methods to apply column-wise mapoverlap operation.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::colwise_OpenMP(Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &arg = get<outArity>(std::forward<CallArgs>(args)...);
@@ -259,9 +259,9 @@ namespace skepu
 		}
 		
 		
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap2D<MapOverlapFunc, CUDAKernel, CLKernel>
+		void MapOverlap2D<MapOverlapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::helper_OpenMP(Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			size_t size_i = get<0>(std::forward<CallArgs>(args)...).size_i();
@@ -300,9 +300,9 @@ namespace skepu
 					}
 		}
 		
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI,  typename... CallArgs>
-		void MapOverlap3D<MapOverlapFunc, CUDAKernel, CLKernel>
+		void MapOverlap3D<MapOverlapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::helper_OpenMP(Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			size_t size_i = get<0>(std::forward<CallArgs>(args)...).size_i();
@@ -346,9 +346,9 @@ namespace skepu
 		
 		
 		
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap4D<MapOverlapFunc, CUDAKernel, CLKernel>
+		void MapOverlap4D<MapOverlapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::helper_OpenMP(Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			size_t size_i = get<0>(std::forward<CallArgs>(args)...).size_i();

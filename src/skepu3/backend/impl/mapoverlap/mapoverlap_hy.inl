@@ -13,9 +13,9 @@ namespace skepu
 		/*!
 		 *  Performs the MapOverlap on a range of elements using \em Hybrid backend and a seperate output range.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::vector_Hybrid(skepu::Parity, pack_indices<OI...> oi, pack_indices<EI...> ei, pack_indices<AI...> ai, pack_indices<CI...> ci, CallArgs&&... args)
 		{
 			auto &arg = get<outArity>(std::forward<CallArgs>(args)...);
@@ -126,9 +126,9 @@ namespace skepu
 		 *  Performs the row-wise MapOverlap on a range of elements on the \em Hybrid backend with a seperate output range.
 		 *  Used internally by other methods to apply row-wise mapoverlap operation.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::rowwise_Hybrid(skepu::Parity, pack_indices<OI...> oi, pack_indices<EI...> ei, pack_indices<AI...> ai, pack_indices<CI...> ci, CallArgs&&... args)
 		{
 			auto &arg = get<outArity>(std::forward<CallArgs>(args)...);
@@ -246,9 +246,9 @@ namespace skepu
 		 *  Performs the column-wise MapOverlap on a range of elements on the \em Hybrid backend with a seperate output range.
 		 *  Used internally by other methods to apply column-wise mapoverlap operation.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::colwise_Hybrid(skepu::Parity, pack_indices<OI...> oi, pack_indices<EI...> ei, pack_indices<AI...> ai, pack_indices<CI...> ci, CallArgs&&... args)
 		{
 			std::cout << "WARNING: colwise_Hybrid is not implemented for Hybrid exection yet. Will run OpenMP version." << std::endl;
@@ -257,9 +257,9 @@ namespace skepu
 		}
 		
 		
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap2D<MapOverlapFunc, CUDAKernel, CLKernel>
+		void MapOverlap2D<MapOverlapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::helper_Hybrid(skepu::Parity, pack_indices<OI...> oi, pack_indices<EI...> ei, pack_indices<AI...> ai, pack_indices<CI...> ci, CallArgs&&... args)
 		{
 			std::cout << "WARNING: helper_Hybrid is not implemented for Hybrid exection yet. Will run OpenMP version." << std::endl;

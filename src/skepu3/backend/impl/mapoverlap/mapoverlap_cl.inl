@@ -13,9 +13,9 @@ namespace skepu
 		 *  Argument startIdx tell from where to perform a partial MapOverlap. Set startIdx=0 for MapOverlap of entire input.
 		 *  The function uses only \em one device which is decided by a parameter. Using \em OpenCL as backend.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::mapOverlapSingle_CL(size_t deviceID, size_t startIdx, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &res = get<0>(std::forward<CallArgs>(args)...);
@@ -86,9 +86,9 @@ namespace skepu
 		 *  The function uses a variable number of devices, dividing the range of elemets equally among the participating devices each mapping
 		 *  its part. Using \em OpenCL as backend.
 		 */
-		template <typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template <typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::mapOverlapNumDevices_CL(size_t numDevices, size_t startIdx, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &res = get<0>(std::forward<CallArgs>(args)...);
@@ -175,9 +175,9 @@ namespace skepu
 		 *  on multiple devices, calling mapOverlapNumDevices_CL.
 		 *  Using \em OpenCL as backend.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::vector_OpenCL(size_t startIdx, Parity p, pack_indices<OI...> oi, pack_indices<EI...> ei, pack_indices<AI...> ai, pack_indices<CI...> ci, CallArgs&&... args)
 		{
 			auto &res = get<0>(std::forward<CallArgs>(args)...);
@@ -203,9 +203,9 @@ namespace skepu
 		 * \param numThreads Number of threads in a thread block.
 		 * \param deviceID The device ID.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<typename T>
-		bool MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		bool MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::sharedMemAvailable_CL(size_t &numThreads, size_t deviceID)
 		{
 			size_t overlap = this->m_overlap;
@@ -232,9 +232,9 @@ namespace skepu
 		 * \param numThreads Number of threads in a thread block.
 		 * \param deviceID The device ID.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<typename T>
-		int MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		int MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::getThreadNumber_CL(size_t width, size_t numThreads, size_t deviceID)
 		{
 			// first check whether shared memory would be ok for this numThreads. Changes numThreads accordingly
@@ -258,9 +258,9 @@ namespace skepu
 		 *  Performs MapOverlap on the first rows of the matrix, specified by the numrows argument.
 		 *  Used internally by other methods to apply row-wise mapoverlap operation.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::mapOverlapSingle_CL_Row(size_t deviceID, size_t numrows, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &res = get<0>(std::forward<CallArgs>(args)...);
@@ -358,9 +358,9 @@ namespace skepu
 		 *  Performs MapOverlap on the first rows of the matrix, specified by the numrows argument.
 		 *  Used internally by other methods to apply row-wise mapoverlap operation.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::mapOverlapSingle_CL_RowMulti(size_t numDevices, size_t numrows, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &res = get<0>(std::forward<CallArgs>(args)...);
@@ -487,9 +487,9 @@ namespace skepu
 		}
 		
 		
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::rowwise_OpenCL(size_t numrows, Parity p, pack_indices<OI...> oi, pack_indices<EI...> ei, pack_indices<AI...> ai, pack_indices<CI...> ci, CallArgs&&... args)
 		{
 			auto &res = get<0>(std::forward<CallArgs>(args)...);
@@ -512,9 +512,9 @@ namespace skepu
 		 *  Performs the column-wise MapOverlap on a range of elements on the \em OpenCL with a seperate output range.
 		 *  Used internally by other methods to apply row-wise mapoverlap operation.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::mapOverlapSingle_CL_Col(size_t deviceID, size_t _numcols, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &res = get<0>(std::forward<CallArgs>(args)...);
@@ -610,9 +610,9 @@ namespace skepu
 		*  Performs the column-wise MapOverlap on a range of elements on the \em OpenCL with a seperate output range.
 		*  Used internally by other methods to apply column-wise mapoverlap operation.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::mapOverlapSingle_CL_ColMulti(size_t numDevices, size_t _numcols, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &res = get<0>(std::forward<CallArgs>(args)...);
@@ -782,9 +782,9 @@ namespace skepu
 		 *  on multiple devices, calling mapOverlapNumDevices_CL.
 		 *  Using \em OpenCL as backend.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel>
+		void MapOverlap1D<MapOverlapFunc, CUDAKernel, C2, C3, C4, CLKernel, FPGAKernel>
 		::colwise_OpenCL(size_t numcols, Parity p, pack_indices<OI...> oi, pack_indices<EI...> ei, pack_indices<AI...> ai, pack_indices<CI...> ci, CallArgs&&... args)
 		{
 			auto &res = get<0>(std::forward<CallArgs>(args)...);
@@ -811,9 +811,9 @@ namespace skepu
 		 *  Performs the 2D MapOverlap using a single OpenCL GPU.
 		 *  The actual filter is specified in a user-function.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap2D<MapOverlapFunc, CUDAKernel, CLKernel>
+		void MapOverlap2D<MapOverlapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::mapOverlapSingleThread_CL(size_t deviceID, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &res = get<0>(std::forward<CallArgs>(args)...);
@@ -882,9 +882,9 @@ namespace skepu
 		 *  Performs the 2D MapOverlap using multiple OpenCL GPUs.
 		 *  The actual filter is specified in a user-function.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap2D<MapOverlapFunc, CUDAKernel, CLKernel>
+		void MapOverlap2D<MapOverlapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::mapOverlapMultipleThread_CL(size_t numDevices, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &res = get<0>(std::forward<CallArgs>(args)...);
@@ -959,9 +959,9 @@ namespace skepu
 		}
 		
 		
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap2D<MapOverlapFunc, CUDAKernel, CLKernel>
+		void MapOverlap2D<MapOverlapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::helper_OpenCL(Parity p, pack_indices<OI...> oi, pack_indices<EI...> ei, pack_indices<AI...> ai, pack_indices<CI...> ci, CallArgs&&... args)
 		{
 			auto &arg = get<outArity>(std::forward<CallArgs>(args)...);
@@ -995,9 +995,9 @@ namespace skepu
 		 *  Performs the 3D MapOverlap using a single OpenCL GPU.
 		 *  The actual filter is specified in a user-function.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap3D<MapOverlapFunc, CUDAKernel, CLKernel>
+		void MapOverlap3D<MapOverlapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::mapOverlapSingleThread_CL(size_t deviceID, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &res = get<0>(std::forward<CallArgs>(args)...);
@@ -1073,9 +1073,9 @@ namespace skepu
 		 *  Performs the 2D MapOverlap using multiple OpenCL GPUs.
 		 *  The actual filter is specified in a user-function.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap3D<MapOverlapFunc, CUDAKernel, CLKernel>
+		void MapOverlap3D<MapOverlapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::mapOverlapMultipleThread_CL(size_t numDevices, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &res = get<0>(std::forward<CallArgs>(args)...);
@@ -1137,9 +1137,9 @@ namespace skepu
 		}
 		
 		
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap3D<MapOverlapFunc, CUDAKernel, CLKernel>
+		void MapOverlap3D<MapOverlapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::helper_OpenCL(Parity p, pack_indices<OI...> oi, pack_indices<EI...> ei, pack_indices<AI...> ai, pack_indices<CI...> ci, CallArgs&&... args)
 		{
 			auto &arg = get<outArity>(std::forward<CallArgs>(args)...);
@@ -1172,9 +1172,9 @@ namespace skepu
 		 *  Performs the 4D MapOverlap using a single OpenCL GPU.
 		 *  The actual filter is specified in a user-function.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap4D<MapOverlapFunc, CUDAKernel, CLKernel>
+		void MapOverlap4D<MapOverlapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::mapOverlapSingleThread_CL(size_t deviceID, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &res = get<0>(std::forward<CallArgs>(args)...);
@@ -1257,9 +1257,9 @@ namespace skepu
 		 *  Performs the 2D MapOverlap using multiple OpenCL GPUs.
 		 *  The actual filter is specified in a user-function.
 		 */
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap4D<MapOverlapFunc, CUDAKernel, CLKernel>
+		void MapOverlap4D<MapOverlapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::mapOverlapMultipleThread_CL(size_t numDevices, Parity p, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto &res = get<0>(std::forward<CallArgs>(args)...);
@@ -1321,9 +1321,9 @@ namespace skepu
 		}
 		
 		
-		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel>
+		template<typename MapOverlapFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapOverlap4D<MapOverlapFunc, CUDAKernel, CLKernel>
+		void MapOverlap4D<MapOverlapFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::helper_OpenCL(Parity p, pack_indices<OI...> oi, pack_indices<EI...> ei, pack_indices<AI...> ai, pack_indices<CI...> ci, CallArgs&&... args)
 		{
 			auto &arg = get<outArity>(std::forward<CallArgs>(args)...);

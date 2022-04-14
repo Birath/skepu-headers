@@ -11,7 +11,7 @@ namespace skepu
 		/*!
 		 *  Applies the MapOverlap skeleton to a range of elements specified by iterators. Result is saved to a seperate output range.
 		 *  Argument startIdx tell from where to perform a partial MapOverlap. Set startIdx=0 for MapOverlap of entire input.
-		 *  The function uses only \em one device which is decided by a parameter. Using \em OpenCL as backend.
+		 *  The function uses only \em one device which is decided by a parameter. Using \em FPGA as backend.
 		 */
 		template<typename MapOverlapFunc, typename CUDAKernel, typename C2, typename C3, typename C4, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
@@ -63,7 +63,7 @@ namespace skepu
 			auto randomMemP = random.updateDevice_CL(random.getAddress(), threads, device, true);
 			
 			FPGAKernel::mapOverlapVector(
-				deviceID, numThreads, numBlocks * numThreads,
+				deviceID,
 				std::get<OI>(outMemP)...,
 				randomMemP,
 				in_mem_p,
@@ -245,7 +245,7 @@ namespace skepu
 			auto randomMemP = random.updateDevice_CL(random.getAddress(), threads, device, true);
 			
 			FPGAKernel::mapOverlapMatrixRowWise(
-				deviceID, numThreads, numBlocks * numThreads,
+				deviceID,
 				std::get<OI>(outMemP)...,
 				randomMemP,
 				inMemP,
@@ -253,8 +253,7 @@ namespace skepu
 				get<CI>(std::forward<CallArgs>(args)...)...,
 				get<0>(std::forward<CallArgs>(args)...).getParent().row_size_info(),
 				&wrapMemP, n,
-				overlap, out_offset, out_numelements, _poly, _pad, blocksPerRow, rowWidth,
-				sharedMemSize
+				overlap, out_offset, out_numelements, _poly, _pad, rowWidth
 			);
 			
 			// Make sure the data is marked as changed by the device
@@ -348,7 +347,6 @@ namespace skepu
 			
 			const size_t numThreads = trdsize; //std::min(maxThreads, rowWidth);
 			const size_t numBlocks = std::max<size_t>(1, std::min(blocksPerCol * numcols, maxBlocks));
-			const size_t sharedMemSize = sizeof(T) * (numThreads+2*overlap);
 			
 			// Copy elements to device and allocate output memory.
 			auto inMemP  = arg.updateDevice_CL(arg.getAddress(), colWidth, numcols, device, true);
@@ -361,7 +359,7 @@ namespace skepu
 			auto randomMemP = random.updateDevice_CL(random.getAddress(), threads, device, true);
 			
 			FPGAKernel::mapOverlapMatrixColWise(
-				deviceID, numThreads, numBlocks * numThreads,
+				deviceID,
 				std::get<OI>(outMemP)...,
 				randomMemP,
 				inMemP,
@@ -370,8 +368,7 @@ namespace skepu
 				get<0>(std::forward<CallArgs>(args)...).getParent().col_size_info(),
 				&wrapMemP,
 				n, overlap, out_offset, out_numelements, _poly, _pad,
-				blocksPerCol, numcols, colWidth,
-				sharedMemSize
+			    numcols, colWidth
 			);
 			
 			// Make sure the data is marked as changed by the device
@@ -398,7 +395,7 @@ namespace skepu
 			const size_t numDevices = std::min(this->m_selected_spec->devices(), this->m_environment->m_devices_CL.size());
 					
 			if (numDevices <= 1)
-				return this->mapOverlapSingle_CL_Col(0, numcols, p, oi, ei, ai, ci, std::forward<CallArgs>(args)...);
+				return this->mapOverlapSingle_FPGA_Col(0, numcols, p, oi, ei, ai, ci, std::forward<CallArgs>(args)...);
 			else
 				SKEPU_ERROR("Multiple devices not supported on FPGA backend");
 		}	

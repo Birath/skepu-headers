@@ -12,9 +12,9 @@ namespace skepu
 {
 	namespace backend
 	{
-		template<size_t arity, typename MapFunc, typename ReduceFunc, typename CUDAKernel, typename CUDAReduceKernel, typename CLKernel>
+		template<size_t arity, typename MapFunc, typename ReduceFunc, typename CUDAKernel, typename CUDAReduceKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... EI, size_t... AI, size_t... CI, typename ...CallArgs>
-		typename MapFunc::Ret MapReduce<arity, MapFunc, ReduceFunc, CUDAKernel, CUDAReduceKernel, CLKernel>
+		typename MapFunc::Ret MapReduce<arity, MapFunc, ReduceFunc, CUDAKernel, CUDAReduceKernel, CLKernel, FPGAKernel>
 		::OMP(size_t size, pack_indices<OI...>, pack_indices<EI...>, pack_indices<AI...>, pack_indices<CI...>, Ret &res, CallArgs&&... args)
 		{
 			// Sync with device data
@@ -58,9 +58,9 @@ namespace skepu
 		
 		
 		
-		template<size_t arity, typename MapFunc, typename ReduceFunc, typename CUDAKernel, typename CUDAReduceKernel, typename CLKernel>
+		template<size_t arity, typename MapFunc, typename ReduceFunc, typename CUDAKernel, typename CUDAReduceKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... AI, size_t... CI, typename ...CallArgs>
-		typename MapFunc::Ret MapReduce<arity, MapFunc, ReduceFunc, CUDAKernel, CUDAReduceKernel, CLKernel>
+		typename MapFunc::Ret MapReduce<arity, MapFunc, ReduceFunc, CUDAKernel, CUDAReduceKernel, CLKernel, FPGAKernel>
 		::OMP(size_t size, pack_indices<OI...>, pack_indices<>, pack_indices<AI...>, pack_indices<CI...>, Ret &res, CallArgs&&... args)
 		{
 			DEBUG_TEXT_LEVEL1("OpenMP MapReduce: size = " << size);

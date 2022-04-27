@@ -25,16 +25,21 @@ namespace skepu
 		*  the mapping function uses (one, two or three). There are also variants which takes iterators as inputs and those that
 		*  takes whole containers (vectors, matrices).
 		*/
-		template<size_t arity, typename MapFunc, typename ReduceFunc, typename CUDAKernel, typename CUDAReduceKernel, typename CLKernel>
+		template<size_t arity, typename MapFunc, typename ReduceFunc, typename CUDAKernel, typename CUDAReduceKernel, typename CLKernel, typename FPGAKernel>
 		class MapReduce : public SkeletonBase
 		{
 		public:
 			MapReduce(CUDAKernel mapreduce, CUDAReduceKernel reduce)
 			: m_cuda_kernel(mapreduce), m_cuda_reduce_kernel(reduce)
 			{
-#if defined(SKEPU_OPENCL) || defined(SKEPU_FPGA)
+#ifdef SKEPU_FPGA
+				FPGAKernel::initialize();
+#endif
+
+#ifdef SKEPU_OPENCL
 				CLKernel::initialize();
 #endif
+
 			}
 
 			static constexpr auto skeletonType = SkeletonType::MapReduce;

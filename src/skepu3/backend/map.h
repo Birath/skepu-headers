@@ -60,7 +60,9 @@ namespace skepu
 			{
 #if defined(SKEPU_FPGA)
 				FPGAKernel::initialize();
-#else if defined(SKEPU_OPENCL)
+#endif
+
+#if defined(SKEPU_OPENCL)
 				CLKernel::initialize();
 #endif
 			}

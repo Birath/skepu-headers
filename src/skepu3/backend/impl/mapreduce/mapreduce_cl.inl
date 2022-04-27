@@ -8,9 +8,9 @@ namespace skepu
 {
 	namespace backend
 	{
-		template<size_t arity, typename MapFunc, typename ReduceFunc, typename CUDAKernel, typename CUDAReduceKernel, typename CLKernel>
+		template<size_t arity, typename MapFunc, typename ReduceFunc, typename CUDAKernel, typename CUDAReduceKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... EI, size_t... AI, size_t... CI, typename ...CallArgs>
-		typename MapFunc::Ret MapReduce<arity, MapFunc, ReduceFunc, CUDAKernel, CUDAReduceKernel, CLKernel>
+		typename MapFunc::Ret MapReduce<arity, MapFunc, ReduceFunc, CUDAKernel, CUDAReduceKernel, CLKernel, FPGAKernel>
 		::mapReduceSingle_CL(size_t deviceID, size_t startIdx, size_t size, pack_indices<EI...> ei, pack_indices<AI...> ai, pack_indices<CI...> ci, Ret &res, CallArgs&&... args)
 		{
 			Ret startValue = res;
@@ -60,9 +60,9 @@ namespace skepu
 		}
 		
 		
-		template<size_t arity, typename MapFunc, typename ReduceFunc, typename CUDAKernel, typename CUDAReduceKernel, typename CLKernel>
+		template<size_t arity, typename MapFunc, typename ReduceFunc, typename CUDAKernel, typename CUDAReduceKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... EI, size_t... AI, size_t... CI, typename ...CallArgs>
-		typename MapFunc::Ret MapReduce<arity, MapFunc, ReduceFunc, CUDAKernel, CUDAReduceKernel, CLKernel>
+		typename MapFunc::Ret MapReduce<arity, MapFunc, ReduceFunc, CUDAKernel, CUDAReduceKernel, CLKernel, FPGAKernel>
 		::mapReduceNumDevices_CL(size_t numDevices, size_t startIdx, size_t size, pack_indices<EI...> ei, pack_indices<AI...> ai, pack_indices<CI...> ci, Ret &res, CallArgs&&... args)
 		{
 			auto aArgs  = std::forward_as_tuple(get<AI>(std::forward<CallArgs>(args)...)...);
@@ -127,9 +127,9 @@ namespace skepu
 			return res;
 		}
 		
-		template<size_t arity, typename MapFunc, typename ReduceFunc, typename CUDAKernel, typename CUDAReduceKernel, typename CLKernel>
+		template<size_t arity, typename MapFunc, typename ReduceFunc, typename CUDAKernel, typename CUDAReduceKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... EI, size_t... AI, size_t... CI, typename... CallArgs>
-		typename MapFunc::Ret MapReduce<arity, MapFunc, ReduceFunc, CUDAKernel, CUDAReduceKernel, CLKernel>
+		typename MapFunc::Ret MapReduce<arity, MapFunc, ReduceFunc, CUDAKernel, CUDAReduceKernel, CLKernel, FPGAKernel>
 		::CL(size_t startIdx, size_t size, pack_indices<EI...> ei, pack_indices<AI...> ai, pack_indices<CI...> ci, Ret &res, CallArgs&&... args)
 		{
 			DEBUG_TEXT_LEVEL1("OpenCL MapReduce: size = " << size << ", maxDevices = " << this->m_selected_spec->devices()

@@ -481,6 +481,10 @@ namespace skepu
 			
 			MapOverlap2D(CUDAKernel kernel) : m_cuda_kernel(kernel)
 			{
+#ifdef SKEPU_FPGA
+				FPGAKernel::initialize();
+#endif
+
 #ifdef SKEPU_OPENCL
 				CLKernel::initialize();
 #endif

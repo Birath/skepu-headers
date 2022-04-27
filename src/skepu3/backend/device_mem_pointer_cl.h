@@ -9,6 +9,10 @@
 
 #include "environment.h"
 #include "device_cl.h"
+#ifdef SKEPU_FPGA
+#include <stdlib.h> // posix_memalign
+#include <cstring> // std::memcpy
+#endif
 
 namespace skepu
 {
@@ -233,8 +237,34 @@ template <typename T>
 			
 			if (copyLast)
 				err = clEnqueueWriteBuffer(m_device->getQueue(), m_deviceDataPointer, CL_TRUE, 0, sizeVec, m_hostDataPointer, 0, NULL, NULL);
-			else
+			else {
+#ifdef SKEPU_FPGA
+#define AOCL_ALIGNMENT 64
+
+				size_t const hostPrefix = AOCL_ALIGNMENT - ((size_t) m_effectiveHostDataPointer & (AOCL_ALIGNMENT - 1));
+				size_t const devicePrefix = AOCL_ALIGNMENT - ((size_t) m_effectiveDeviceDataPointer & (AOCL_ALIGNMENT - 1));
+				DEBUG_TEXT_LEVEL1("HOST_TO_DEVICE FPGA, host alignment " << hostPrefix << " device alignment " << devicePrefix);
+				if (hostPrefix != AOCL_ALIGNMENT) {
+					SKEPU_WARNING("HOST_TO_DEVICE FPGA, Unaligned host memory: " << hostPrefix << " should be " << AOCL_ALIGNMENT << ". This will lead to non DMA transfers");
+					err = clEnqueueWriteBuffer(m_device->getQueue(), m_effectiveDeviceDataPointer, CL_TRUE, 0, sizeVec, m_effectiveHostDataPointer, 0, NULL, NULL);
+				}
+				else if (hostPrefix == AOCL_ALIGNMENT && hostPrefix == AOCL_ALIGNMENT || sizeVec < AOCL_ALIGNMENT) {
+					err = clEnqueueWriteBuffer(m_device->getQueue(), m_effectiveDeviceDataPointer, CL_TRUE, 0, sizeVec, m_effectiveHostDataPointer, 0, NULL, NULL);
+				} else {
+					size_t const deviceOffset = (size_t) m_effectiveDeviceDataPointer & (AOCL_ALIGNMENT - 1);
+					void* tempBuffer;
+					err = posix_memalign(&tempBuffer, AOCL_ALIGNMENT, sizeVec + deviceOffset);
+					std::memcpy(tempBuffer + deviceOffset, m_effectiveHostDataPointer, sizeVec);
+					
+					err = clEnqueueWriteBuffer(m_device->getQueue(), m_effectiveDeviceDataPointer, CL_FALSE, 0, devicePrefix, tempBuffer + deviceOffset, 0, NULL, NULL);
+					err = clEnqueueWriteBuffer(m_device->getQueue(), m_effectiveDeviceDataPointer, CL_TRUE, devicePrefix, sizeVec - devicePrefix, tempBuffer + deviceOffset + devicePrefix, 0, NULL, NULL);
+					if (tempBuffer) free(tempBuffer); 	
+				}
+#else
 				err = clEnqueueWriteBuffer(m_device->getQueue(), m_effectiveDeviceDataPointer, CL_TRUE, 0, sizeVec, m_effectiveHostDataPointer, 0, NULL, NULL);
+#endif
+
+			}
 			CL_CHECK_ERROR(err, "Error copying data to OpenCL device, size: ", sizeVec);
 			
 			DEBUG_TEXT_LEVEL1("HOST_TO_DEVICE OpenCL, size " << sizeVec << " B (" << (sizeVec/sizeof(T)) << " elements)");

@@ -248,7 +248,9 @@ template <typename T>
 				size_t const devicePrefix = AOCL_ALIGNMENT - ((size_t) m_effectiveDeviceDataPointer & (AOCL_ALIGNMENT - 1));
 				DEBUG_TEXT_LEVEL1("HOST_TO_DEVICE FPGA, host alignment " << hostPrefix << " device alignment " << devicePrefix);
 				if (hostPrefix != AOCL_ALIGNMENT || disableDynamicDma) {
-					SKEPU_WARNING("HOST_TO_DEVICE FPGA, Unaligned host memory: " << hostPrefix << " should be " << AOCL_ALIGNMENT << ". This will lead to non DMA transfers");
+					if (sizeVec > AOCL_ALIGNMENT) {
+						SKEPU_WARNING("HOST_TO_DEVICE FPGA, Unaligned host memory: " << hostPrefix << " should be " << AOCL_ALIGNMENT << ". This will lead to non DMA transfers");
+					}
 					err = clEnqueueWriteBuffer(m_device->getQueue(), m_effectiveDeviceDataPointer, CL_TRUE, 0, sizeVec, m_effectiveHostDataPointer, 0, NULL, NULL);
 				}
 				else if (hostPrefix == AOCL_ALIGNMENT && hostPrefix == AOCL_ALIGNMENT || sizeVec < AOCL_ALIGNMENT) {
@@ -321,7 +323,9 @@ template <typename T>
 				size_t const devicePrefix = AOCL_ALIGNMENT - ((size_t) m_effectiveDeviceDataPointer & (AOCL_ALIGNMENT - 1));
 				DEBUG_TEXT_LEVEL1("DEVICE_TO_HOST FPGA, host alignment " << hostPrefix << " device alignment " << devicePrefix);
 				if (hostPrefix != AOCL_ALIGNMENT || disableDynamicDma) {
-					SKEPU_WARNING("DEVICE_TO_HOST FPGA, Unaligned host memory: " << hostPrefix << " should be " << AOCL_ALIGNMENT << ". This will lead to non DMA transfers");
+					if (sizeVec > AOCL_ALIGNMENT) {
+						SKEPU_WARNING("DEVICE_TO_HOST FPGA, Unaligned host memory: " << hostPrefix << " should be " << AOCL_ALIGNMENT << ". This will lead to non DMA transfers");
+					}
 					err = clEnqueueReadBuffer(m_device->getQueue(), m_effectiveDeviceDataPointer, CL_TRUE, 0, sizeVec, (void*)m_effectiveHostDataPointer, 0, NULL, NULL);
 				}
 				else if (hostPrefix == AOCL_ALIGNMENT && hostPrefix == AOCL_ALIGNMENT || sizeVec < AOCL_ALIGNMENT) {

@@ -71,8 +71,7 @@ namespace skepu
 				get<CI>(std::forward<CallArgs>(args)...)...,
 				get<0>(std::forward<CallArgs>(args)...).getParent().size_info(),
 				&wrap_mem_p,
-				n, overlap, out_offset, out_numelements, _poly, _pad,
-				sharedMemSize
+				n, overlap, out_offset, out_numelements, _poly, _pad
 			);
 			
 			// Make sure the data is marked as changed by the device
@@ -440,8 +439,8 @@ namespace skepu
 			numBlocks[0] = (size_t)((out_cols + numThreads[0] - 1) / numThreads[0]) * numThreads[0];
 			numBlocks[1] = (size_t)((out_rows + numThreads[1] - 1) / numThreads[1]) * numThreads[1];
 			
-			const size_t sharedCols = numThreads[0] + this->m_overlap_x * 2;
-			const size_t sharedRows = numThreads[1] + this->m_overlap_y * 2;
+			const size_t sharedCols = this->m_overlap_x * 2;
+			const size_t sharedRows = this->m_overlap_y * 2;
 			const size_t sharedMemSize =  sharedRows * sharedCols * sizeof(T);
 			
 			DEBUG_TEXT_LEVEL1("OpenCL MapOverlap 2D: device = " << deviceID << ", numThreads = "
@@ -485,7 +484,7 @@ namespace skepu
 			const size_t numDevices = std::min(this->m_selected_spec->devices(), this->m_environment->m_devices_CL.size());
 			
 			if (numDevices <= 1)
-				return this->mapOverlapSingleThread_CL(0, p, oi, ei, ai, ci, std::forward<CallArgs>(args)...);
+				return this->mapOverlapSingleThread_FPGA(0, p, oi, ei, ai, ci, std::forward<CallArgs>(args)...);
 			else
 				SKEPU_ERROR("Multiple devices not supported on FPGA backend");
 

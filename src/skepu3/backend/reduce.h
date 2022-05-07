@@ -39,12 +39,11 @@ namespace skepu
 		public:
 			Reduce1D(CUDAKernel kernel) : m_cuda_kernel(kernel)
 			{
-#if defined(SKEPU_FPGA) 
+#ifdef SKEPU_FPGA
 				FPGAKernel::initialize();
-#else
+#endif
 #ifdef SKEPU_OPENCL
 				CLKernel::initialize();
-#endif
 #endif
 			}
 			

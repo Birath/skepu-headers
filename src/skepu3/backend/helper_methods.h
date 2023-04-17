@@ -58,7 +58,7 @@ namespace skepu
 			{
 				SKEPU_ERROR("Error allocating pinned host memory\n");
 			}
-#elif defined(SKEPU_FPGA)
+#elif defined(SKEPU_FPGA) && !defined(DISABLE_DYNAMIC_DMA)
 		int error = posix_memalign((void**)&data, 64, numElems * sizeof(T));
 		if (error) {
 			SKEPU_ERROR("Alligned memory allocation failed\n");
@@ -87,7 +87,7 @@ namespace skepu
 			cudaError_t status = cudaFreeHost(data);
 			if (status != cudaSuccess)
 				SKEPU_ERROR("Error de-allocating pinned host memory.\n");
-#elif defined(SKEPU_FPGA)
+#elif defined(SKEPU_FPGA) && !defined(DISABLE_DYNAMIC_DMA)
 			free(data);
 #else
 			delete[] data;

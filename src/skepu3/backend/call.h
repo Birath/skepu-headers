@@ -23,7 +23,7 @@ namespace skepu
 		 *  the mapping function uses (one, two or three). There are also variants which takes iterators as inputs and those that
 		 *  takes whole containers (vectors, matrices). The container variants are merely wrappers for the functions which takes iterators as parameters.
 		 */
-		template<typename CallFunc, typename CUDAKernel, typename CLKernel>
+		template<typename CallFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		class Call : public SkeletonBase
 		{
 			static constexpr size_t numArgs = CallFunc::totalArity;

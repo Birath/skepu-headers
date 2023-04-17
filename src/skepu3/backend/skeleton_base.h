@@ -62,6 +62,11 @@ namespace skepu
 				this->m_prng->registerInstance(this, iterations);
 			}
 			
+			constexpr int setFPGAUnroll(size_t unrollFactor)
+			{
+				return 0;
+			}
+			
 		protected:
 			SkeletonBase()
 			{

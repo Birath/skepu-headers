@@ -12,9 +12,9 @@ namespace skepu
 {
 	namespace backend
 	{
-		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... VEI, size_t... HEI, size_t... AI, size_t... CI, typename ...CallArgs>
-		void MapPairs<Varity, Harity, MapPairsFunc, CUDAKernel, CLKernel>
+		void MapPairs<Varity, Harity, MapPairsFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::mapPairsSingleThread_CU(size_t deviceID, size_t startIdx, size_t Vsize, size_t Hsize, pack_indices<OI...>, pack_indices<VEI...>, pack_indices<HEI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			const size_t size = Vsize * Hsize;
@@ -68,9 +68,9 @@ namespace skepu
 		}
 		
 		
-		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... VEI, size_t... HEI, size_t... AI, size_t... CI, typename ...CallArgs>
-		void MapPairs<Varity, Harity, MapPairsFunc, CUDAKernel, CLKernel>
+		void MapPairs<Varity, Harity, MapPairsFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::mapPairsMultiStream_CU(size_t deviceID, size_t startIdx, size_t Vsize, size_t Hsize, pack_indices<OI...>, pack_indices<VEI...>, pack_indices<HEI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			CHECK_CUDA_ERROR(cudaSetDevice(deviceID));
@@ -157,9 +157,9 @@ namespace skepu
 		}
 		
 		
-		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... VEI, size_t... HEI, size_t... AI, size_t... CI, typename ...CallArgs>
-		void MapPairs<Varity, Harity, MapPairsFunc, CUDAKernel, CLKernel>
+		void MapPairs<Varity, Harity, MapPairsFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::mapPairsMultiStreamMultiGPU_CU(size_t useNumGPU, size_t startIdx, size_t Vsize, size_t Hsize, pack_indices<OI...>, pack_indices<VEI...>, pack_indices<HEI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 #ifdef USE_PINNED_MEMORY
@@ -262,9 +262,9 @@ namespace skepu
 		}
 		
 		
-		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... VEI, size_t... HEI, size_t... AI, size_t... CI, typename ...CallArgs>
-		void MapPairs<Varity, Harity, MapPairsFunc, CUDAKernel, CLKernel>
+		void MapPairs<Varity, Harity, MapPairsFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::mapPairsSingleThreadMultiGPU_CU(size_t numDevices, size_t startIdx, size_t Vsize, size_t Hsize, pack_indices<OI...>, pack_indices<VEI...>, pack_indices<HEI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			const size_t size = Vsize * Hsize;
@@ -342,9 +342,9 @@ namespace skepu
 		}
 		
 		
-		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... VEI, size_t... HEI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapPairs<Varity, Harity, MapPairsFunc, CUDAKernel, CLKernel>
+		void MapPairs<Varity, Harity, MapPairsFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::CUDA(size_t startIdx, size_t Vsize, size_t Hsize, pack_indices<OI...> oi, pack_indices<VEI...> vei, pack_indices<HEI...> hei, pack_indices<AI...> ai, pack_indices<CI...> ci, CallArgs&&... args)
 		{
 			DEBUG_TEXT_LEVEL1("CUDA MapPairs: Vsize = " << Vsize << ", Hsize = " << Hsize << ", maxDevices = " << this->m_selected_spec->devices()

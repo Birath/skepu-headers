@@ -17,7 +17,7 @@ namespace skepu
 		*
 		*  \brief A class representing the MapPairsReduce skeleton.
 		*/
-		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename ReduceFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename ReduceFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		class MapPairsReduce : public SkeletonBase
 		{
 		public:

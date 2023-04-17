@@ -10,9 +10,9 @@ namespace skepu
 {
 	namespace backend
 	{
-		template<typename CallFunc, typename CUDAKernel, typename CLKernel>
+		template<typename CallFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... AI, size_t... CI, typename... CallArgs> 
-		void Call<CallFunc, CUDAKernel, CLKernel>
+		void Call<CallFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::callSingleThread_CU(size_t deviceID, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto aArgs = std::make_tuple(get<AI>(std::forward<CallArgs>(args)...)...);
@@ -47,9 +47,9 @@ namespace skepu
 		}
 		
 		
-		template<typename CallFunc, typename CUDAKernel, typename CLKernel>
+		template<typename CallFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... AI, size_t... CI, typename ...CallArgs> 
-		void Call<CallFunc, CUDAKernel, CLKernel>
+		void Call<CallFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::callMultiStream_CU(size_t deviceID, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			CHECK_CUDA_ERROR(cudaSetDevice(deviceID));
@@ -97,9 +97,9 @@ namespace skepu
 		}
 		
 		
-		template<typename CallFunc, typename CUDAKernel, typename CLKernel>
+		template<typename CallFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... AI, size_t... CI, typename ...CallArgs> 
-		void Call<CallFunc, CUDAKernel, CLKernel>
+		void Call<CallFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::callMultiStreamMultiGPU_CU(size_t useNumGPU, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 #ifdef USE_PINNED_MEMORY
@@ -164,9 +164,9 @@ namespace skepu
 		}
 		
 		
-		template<typename CallFunc, typename CUDAKernel, typename CLKernel>
+		template<typename CallFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... AI, size_t... CI, typename... CallArgs> 
-		void Call<CallFunc, CUDAKernel, CLKernel>
+		void Call<CallFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::callSingleThreadMultiGPU_CU(size_t numDevices, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			auto aArgs = std::make_tuple(get<AI>(std::forward<CallArgs>(args)...)...);
@@ -208,9 +208,9 @@ namespace skepu
 		}
 		
 		
-		template<typename CallFunc, typename CUDAKernel, typename CLKernel>
+		template<typename CallFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... AI, size_t... CI, typename... CallArgs> 
-		void Call<CallFunc, CUDAKernel, CLKernel>
+		void Call<CallFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::CUDA(pack_indices<AI...> ai, pack_indices<CI...> ci, CallArgs&&... args)
 		{
 			DEBUG_TEXT_LEVEL1("CUDA Call: Devices = " << this->m_selected_spec->devices()

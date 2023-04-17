@@ -8,9 +8,9 @@ namespace skepu
 {
 	namespace backend
 	{
-		template<typename CallFunc, typename CUDAKernel, typename CLKernel>
+		template<typename CallFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... AI, size_t... CI, typename... CallArgs> 
-		void Call<CallFunc, CUDAKernel, CLKernel>
+		void Call<CallFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::CL(pack_indices<AI...> ai, pack_indices<CI...> ci, CallArgs&&... args)
 		{
 			DEBUG_TEXT_LEVEL1("OpenCL Call: Devices = " << this->m_selected_spec->devices()

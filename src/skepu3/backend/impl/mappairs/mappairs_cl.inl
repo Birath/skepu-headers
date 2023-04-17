@@ -8,9 +8,9 @@ namespace skepu
 {
 	namespace backend
 	{
-		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... VEI, size_t... HEI, size_t... AI, size_t... CI, typename... CallArgs> 
-		void MapPairs<Varity, Harity, MapPairsFunc, CUDAKernel, CLKernel>
+		void MapPairs<Varity, Harity, MapPairsFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::mapNumDevices_CL(size_t startIdx, size_t numDevices, size_t Vsize, size_t Hsize, pack_indices<OI...>, pack_indices<VEI...>, pack_indices<HEI...>, pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			constexpr size_t numKernelArgs = numArgs + 3;
@@ -69,9 +69,9 @@ namespace skepu
 		}
 		
 		
-		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... OI, size_t... VEI, size_t... HEI, size_t... AI, size_t... CI, typename... CallArgs>
-		void MapPairs<Varity, Harity, MapPairsFunc, CUDAKernel, CLKernel>
+		void MapPairs<Varity, Harity, MapPairsFunc, CUDAKernel, CLKernel, FPGAKernel>
 		::CL(size_t startIdx, size_t Vsize, size_t Hsize, pack_indices<OI...> oi, pack_indices<VEI...> vei, pack_indices<HEI...> hei, pack_indices<AI...> ai, pack_indices<CI...> ci, CallArgs&&... args)
 		{
 			DEBUG_TEXT_LEVEL1("OpenCL MapPairs: Vsize = " << Vsize << ", Hsize = " << Hsize << ", maxDevices = " << this->m_selected_spec->devices()

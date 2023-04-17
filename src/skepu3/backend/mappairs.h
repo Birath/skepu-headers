@@ -20,7 +20,7 @@ namespace skepu
 		 *  This class defines the MapPairs skeleton, a calculation pattern where a user function is applied to each element of the cartesian product of input vectors.
 		 *  Result is a Matrix.
 		 */
-		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename CUDAKernel, typename CLKernel>
+		template<size_t Varity, size_t Harity, typename MapPairsFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		class MapPairs : public SkeletonBase
 		{
 			// ==========================    Type definitions   ==========================

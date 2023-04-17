@@ -6,9 +6,9 @@ namespace skepu
 {
 	namespace backend
 	{
-		template<typename CallFunc, typename CUDAKernel, typename CLKernel>
+		template<typename CallFunc, typename CUDAKernel, typename CLKernel, typename FPGAKernel>
 		template<size_t... AI, size_t... CI, typename... CallArgs> 
-		void Call<CallFunc, CUDAKernel, CLKernel> 
+		void Call<CallFunc, CUDAKernel, CLKernel, FPGAKernel> 
 		::CPU(pack_indices<AI...>, pack_indices<CI...>, CallArgs&&... args)
 		{
 			DEBUG_TEXT_LEVEL1("CPU Call");
